@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { createHighlighter } from "shiki";
+import DOMPurify from "dompurify";
 
 interface CodeBlockProps extends React.HTMLAttributes<HTMLDivElement> {
   value: string;
@@ -26,8 +27,10 @@ export default function CodeBlock({ value, ...props }: CodeBlockProps) {
     theme: "github-light",
   });
 
-  return out ? (
-    <div dangerouslySetInnerHTML={{ __html: out }} {...props} />
+  const sanitizedHtml = out ? DOMPurify.sanitize(out) : null;
+
+  return sanitizedHtml ? (
+    <div dangerouslySetInnerHTML={{ __html: sanitizedHtml }} {...props} />
   ) : (
     <div className="w-full h-32" />
   );

@@ -41,6 +41,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
     "constate": "^3.3.2",
+    "dompurify": "^3.2.4",
     "keyv": "npm:@keyvhq/core@~1.6.26",
     "lucide-react": "^0.477.0",
     "motion": "^12.5.0",

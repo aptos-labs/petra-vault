@@ -24,7 +24,6 @@ export const useVaults = create<VaultsState & VaultsActions>()(
     (set, get) => ({
       ...{
         vaults: [],
-        activeVault: undefined,
         hasHydrated: false
       },
       ...{

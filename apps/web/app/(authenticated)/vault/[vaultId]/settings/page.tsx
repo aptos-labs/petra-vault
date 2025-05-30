@@ -16,7 +16,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useActiveVault } from '@/context/ActiveVaultProvider';
 import { useVaults } from '@/context/useVaults';
 import { getExplorerUrl } from '@aptos-labs/js-pro';
-import { truncateAddress } from '@aptos-labs/wallet-adapter-react';
 import { ExternalLinkIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { AptosAvatar } from 'aptos-avatars-react';
 import { useState } from 'react';
@@ -33,6 +32,9 @@ import {
   DialogClose
 } from '@/components/ui/dialog';
 import useAnalytics from '@/hooks/useAnalytics';
+import AddressDisplay from '@/components/AddressDisplay';
+import VaultNameForm from '@/components/forms/VaultNameForm';
+import { toast } from 'sonner';
 
 export default function VaultSettingsPage() {
   const trackEvent = useAnalytics();
@@ -44,12 +46,43 @@ export default function VaultSettingsPage() {
     Math.random()
   );
 
-  const { deleteVault } = useVaults();
-  const { network, owners, vaultAddress, signaturesRequired, isOwner } =
+  const { deleteVault, updateVault } = useVaults();
+  const { network, owners, vaultAddress, signaturesRequired, isOwner, vault } =
     useActiveVault();
 
   return (
     <div className="pb-6 md:py-6 flex flex-col gap-6">
+      {vault && (
+        <Card className="grid md:grid-cols-2 md:px-8 border-0 md:border-1">
+          <h3 className="font-display text-lg font-semibold tracking-wide px-2 md:px-0">
+            Vault Details
+          </h3>
+          <div className="px-2 md:px-6">
+            <section>
+              <CardHeader className="px-0">
+                <CardTitle className="font-medium">Vault Name</CardTitle>
+                <CardDescription>The name of the vault.</CardDescription>
+              </CardHeader>
+              <CardContent className="px-0 pt-2">
+                <VaultNameForm
+                  label=""
+                  actionClassName="w-fit"
+                  className="flex flex-col gap-4"
+                  actionLabel="Rename Vault"
+                  defaultValues={{ name: vault.name }}
+                  onSubmit={({ name }) => {
+                    updateVault({ ...vault, name });
+                    toast.success('Vault renamed successfully!');
+                  }}
+                />
+              </CardContent>
+            </section>
+          </div>
+        </Card>
+      )}
+
+      <Separator className="md:hidden" />
+
       <Card className="grid md:grid-cols-2 md:px-8 border-0 md:border-1">
         <h3 className="font-display text-lg font-semibold tracking-wide px-2 md:px-0">
           Vault Owners
@@ -75,7 +108,7 @@ export default function VaultSettingsPage() {
                         className="font-display text-sm font-medium ml-1"
                         data-testid={`vault-owner-${owner}`}
                       >
-                        {truncateAddress(owner)}
+                        <AddressDisplay address={owner} />
                       </p>
                       <div className="flex items-center gap-2">
                         <Button

@@ -13,6 +13,7 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Button } from '../ui/button';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -21,26 +22,38 @@ const formSchema = z.object({
 });
 
 interface VaultNameFormProps {
+  label?: string;
+  actionLabel?: string;
+  actionClassName?: string;
+  className?: string;
   onSubmit: (values: z.infer<typeof formSchema>) => void;
+  defaultValues?: z.infer<typeof formSchema>;
 }
 
-export default function VaultNameForm({ onSubmit }: VaultNameFormProps) {
+export default function VaultNameForm({
+  label = 'Name',
+  actionLabel = 'Create a New Vault',
+  actionClassName,
+  className = 'flex flex-col gap-5',
+  onSubmit,
+  defaultValues
+}: VaultNameFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: 'My Petra Vault'
+      name: defaultValues?.name || 'My Petra Vault'
     }
   });
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className={cn(className)}>
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>{label}</FormLabel>
               <FormControl>
                 <Input placeholder="My Petra Vault" {...field} />
               </FormControl>
@@ -48,13 +61,12 @@ export default function VaultNameForm({ onSubmit }: VaultNameFormProps) {
             </FormItem>
           )}
         />
-        <br />
         <Button
           type="submit"
-          className="w-full"
+          className={cn('w-full', actionClassName)}
           data-testid="create-vault-button"
         >
-          Create a New Vault
+          {actionLabel}
         </Button>
       </form>
     </Form>

@@ -1,5 +1,10 @@
-// TODO: Migrate to ecosystem lists API
-export const ecosystemApps = [
+import { EcosystemApp } from '@/hooks/usePetraEcosystemApps';
+
+// Re-export the hook and types for convenience
+export { usePetraEcosystemApps, type EcosystemApp } from '@/hooks/usePetraEcosystemApps';
+
+// Keep the old hardcoded apps as fallback (can be removed later)
+export const fallbackEcosystemApps = [
   {
     categories: ['defi', 'liquidStaking'],
     platform: ['mobile', 'extension', 'web'],
@@ -115,14 +120,21 @@ export const ecosystemApps = [
 
 /**
  * Check if a given URL matches any of the known ecosystem apps
+ * @param url - The URL to check
+ * @param ecosystemApps - Array of ecosystem apps to check against (optional, uses fallback if not provided)
  */
-export function isKnownEcosystemApp(url: string): boolean {
+export function isKnownEcosystemApp(url: string, ecosystemApps?: EcosystemApp[]): boolean {
+  const appsToCheck = ecosystemApps || fallbackEcosystemApps;
+  
   try {
     const targetUrl = new URL(url);
     const targetOrigin = targetUrl.origin;
     const targetHostname = targetUrl.hostname;
 
-    return ecosystemApps.some((app) => {
+    return appsToCheck.some((app) => {
+      // Skip apps without a link (e.g., widgets)
+      if (!app.link) return false;
+      
       try {
         const appUrl = new URL(app.link);
         const appOrigin = appUrl.origin;
@@ -137,6 +149,6 @@ export function isKnownEcosystemApp(url: string): boolean {
     });
   } catch {
     // If url is not valid, fall back to exact string matching
-    return ecosystemApps.some((app) => app.link === url);
+    return appsToCheck.some((app) => app.link === url);
   }
 }

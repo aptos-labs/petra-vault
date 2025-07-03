@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { UnknownDappWarning } from '@/components/ui/UnknownDappWarning';
 import { useActiveVault } from '@/context/ActiveVaultProvider';
 import { useAppSettings } from '@/context/useAppSettings';
-import { isKnownEcosystemApp } from '@/lib/ecosystem';
+import { isKnownEcosystemApp, usePetraEcosystemApps } from '@/lib/ecosystem';
 import { PetraVaultApprovalClient } from '@/wallet/PetraVaultApprovalClient';
 import { PetraVaultRequestHandler } from '@/wallet/PetraVaultRequestHandler';
 import { useAptosCore } from '@aptos-labs/react';
@@ -26,6 +26,9 @@ export default function VaultExploreEmbeddedPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const core = useAptosCore();
+
+  // Fetch ecosystem apps data
+  const { data: ecosystemAppsData, isLoading: isLoadingApps } = usePetraEcosystemApps();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -61,10 +64,28 @@ export default function VaultExploreEmbeddedPage() {
   useEffect(() => {
     window.addEventListener('message', handleRequest);
 
-    const isKnownApp = url ? isKnownEcosystemApp(url) : false;
+    return () => {
+      window.removeEventListener('message', handleRequest);
+    };
+  }, [handleRequest]);
+
+  // Effect to handle warning logic once apps data is loaded
+  useEffect(() => {
+    if (!url) return;
+
+    // Wait for ecosystem apps data to load before checking if app is known
+    if (isLoadingApps) {
+      setIsReady(false);
+      setShowWarning(false);
+      return;
+    }
+
+    // Now we have the data, check if the app is known
+    const ecosystemApps = ecosystemAppsData?.data;
+    const isKnownApp = isKnownEcosystemApp(url, ecosystemApps);
 
     // Show warning for unknown apps, but only if URL exists and is not known
-    if (url && !isKnownApp) {
+    if (!isKnownApp) {
       // Check if user has settings to ignore warnings for this domain
       const settings = getSettingsForUrl(url);
 
@@ -82,11 +103,7 @@ export default function VaultExploreEmbeddedPage() {
       setIsReady(true);
       setIsIframeLoading(true);
     }
-
-    return () => {
-      window.removeEventListener('message', handleRequest);
-    };
-  }, [handleRequest, url, getSettingsForUrl]);
+  }, [url, ecosystemAppsData, isLoadingApps, getSettingsForUrl]);
 
   if (!url) {
     return <div>No URL provided</div>;
@@ -109,7 +126,12 @@ export default function VaultExploreEmbeddedPage() {
         </Link>
       </div>
       <div className="relative flex-1">
-        {isReady ? (
+        {/* Show loading while apps data is being fetched */}
+        {isLoadingApps ? (
+          <div className="w-full h-full rounded-md border flex items-center justify-center">
+            <LoadingSpinner />
+          </div>
+        ) : isReady ? (
           <>
             <iframe
               ref={iframeRef}

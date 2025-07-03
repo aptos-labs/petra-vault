@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { UnknownDappWarning } from '@/components/ui/UnknownDappWarning';
 import { useActiveVault } from '@/context/ActiveVaultProvider';
 import { useAppSettings } from '@/context/useAppSettings';
-import { isKnownEcosystemApp } from '@/lib/ecosystem';
+import { isKnownEcosystemApp, usePetraEcosystemApps } from '@/lib/ecosystem';
 import { PetraVaultApprovalClient } from '@/wallet/PetraVaultApprovalClient';
 import { PetraVaultRequestHandler } from '@/wallet/PetraVaultRequestHandler';
 import { useAptosCore } from '@aptos-labs/react';
@@ -23,6 +23,9 @@ export default function VaultExploreSearchPage() {
   const approvalModalRef = useRef<PetraVaultApprovalModalRef>(null);
   const { id, vaultAddress, network } = useActiveVault();
   const { getSettingsForUrl, updateSettingsForUrl } = useAppSettings();
+
+  // Fetch ecosystem apps data
+  const { data: ecosystemAppsData, isLoading: isLoadingApps } = usePetraEcosystemApps();
 
   const core = useAptosCore();
 
@@ -55,28 +58,6 @@ export default function VaultExploreSearchPage() {
       try {
         new URL(formattedUrl);
         setUrl(formattedUrl);
-
-        // Check if it's a known app and show warning if not
-        const isKnown = isKnownEcosystemApp(formattedUrl);
-
-        if (!isKnown) {
-          // Check if user has settings to ignore warnings for this domain
-          const settings = getSettingsForUrl(formattedUrl);
-
-          if (settings.ignoreUnknownAppWarning) {
-            // Skip warning and go directly to the app
-            setShowWarning(false);
-            setIsReady(true);
-          } else {
-            // Show warning as usual
-            setShowWarning(true);
-            setIsReady(false);
-          }
-        } else {
-          setShowWarning(false);
-          setIsReady(true);
-        }
-
         setIsIframeLoading(true);
       } catch (error) {
         console.warn('Invalid URL provided:', error);
@@ -84,6 +65,40 @@ export default function VaultExploreSearchPage() {
       }
     }
   };
+
+  // Effect to handle warning logic when URL changes or apps data loads
+  useEffect(() => {
+    if (!url) return;
+
+    // Wait for ecosystem apps data to load before checking if app is known
+    if (isLoadingApps) {
+      setIsReady(false);
+      setShowWarning(false);
+      return;
+    }
+
+    // Now we have the data, check if the app is known
+    const ecosystemApps = ecosystemAppsData?.data;
+    const isKnown = isKnownEcosystemApp(url, ecosystemApps);
+
+    if (!isKnown) {
+      // Check if user has settings to ignore warnings for this domain
+      const settings = getSettingsForUrl(url);
+
+      if (settings.ignoreUnknownAppWarning) {
+        // Skip warning and go directly to the app
+        setShowWarning(false);
+        setIsReady(true);
+      } else {
+        // Show warning as usual
+        setShowWarning(true);
+        setIsReady(false);
+      }
+    } else {
+      setShowWarning(false);
+      setIsReady(true);
+    }
+  }, [url, ecosystemAppsData, isLoadingApps, getSettingsForUrl]);
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputUrl(e.target.value);
@@ -171,6 +186,10 @@ export default function VaultExploreSearchPage() {
                 interact with web applications using your vault.
               </p>
             </div>
+          </div>
+        ) : isLoadingApps ? (
+          <div className="w-full h-full rounded-md border flex items-center justify-center">
+            <LoadingSpinner />
           </div>
         ) : isReady ? (
           <>

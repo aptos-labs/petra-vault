@@ -94,7 +94,7 @@ export default function AppsSettingsPage() {
               <Globe className="h-12 w-12 mx-auto opacity-50 mb-4" />
               <p>No app settings saved yet.</p>
               <p className="text-sm mt-2">
-                When you visit unknown applications and choose to remember your
+                When you visit applications and choose to remember your
                 preferences, they will appear here.
               </p>
             </div>

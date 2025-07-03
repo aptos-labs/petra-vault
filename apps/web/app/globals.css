@@ -41,6 +41,8 @@
 
   /* Custom Colors */
   --border-dark: oklch(92.88% 0.0126 255.51);
+  --warning: oklch(0.577 0.245 27.325);
+  --warning-foreground: oklch(0.577 0.245 27.325);
 }
 
 .dark {
@@ -79,6 +81,8 @@
 
   /* Custom Colors */
   --border-dark: oklch(0.269 0 0);
+  --warning: oklch(0.577 0.245 27.325);
+  --warning-foreground: oklch(0.577 0.245 27.325);
 }
 
 @theme inline {

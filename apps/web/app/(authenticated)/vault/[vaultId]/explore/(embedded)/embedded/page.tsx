@@ -36,6 +36,7 @@ export default function VaultExploreEmbeddedPage() {
   const [isReady, setIsReady] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [isIframeLoading, setIsIframeLoading] = useState(false);
+  const [isUnknownApp, setIsUnknownApp] = useState(false);
 
   const url = searchParams.get('url');
 
@@ -78,30 +79,34 @@ export default function VaultExploreEmbeddedPage() {
     if (isLoadingApps) {
       setIsReady(false);
       setShowWarning(false);
+      setIsUnknownApp(false);
       return;
     }
 
-    // Now we have the data, check if the app is known
-    const isKnownApp = isKnownEcosystemApp(url, ecosystemApps?.data);
+    const ecosystemAppsData = ecosystemApps?.data || [];
+    const knownApp = isKnownEcosystemApp(url, ecosystemAppsData);
 
-    // Show warning for unknown apps, but only if URL exists and is not known
-    if (!isKnownApp) {
-      // Check if user has settings to ignore warnings for this domain
+    if (!knownApp) {
+      // If it's not a known app, prevent loading entirely
+      setIsUnknownApp(true);
+      setShowWarning(false);
+      setIsReady(false);
+    } else {
+      // If it's a known app, check user settings for warnings
       const settings = getSettingsForUrl(url);
 
       if (settings.ignoreUnknownAppWarning) {
         // Skip warning and go directly to the app
+        setIsUnknownApp(false);
         setShowWarning(false);
         setIsReady(true);
         setIsIframeLoading(true);
       } else {
-        // Show warning as usual
+        // Show warning for known apps by default
+        setIsUnknownApp(false);
         setShowWarning(true);
         setIsReady(false);
       }
-    } else {
-      setIsReady(true);
-      setIsIframeLoading(true);
     }
   }, [url, ecosystemApps, isLoadingApps, getSettingsForUrl]);
 
@@ -112,12 +117,14 @@ export default function VaultExploreEmbeddedPage() {
   return (
     <div className="flex flex-col h-full gap-4">
       <div className="flex items-center justify-between gap-4">
-        <Link href={`/vault/${id}/explore`}>
-          <Button variant="secondary" className="w-fit">
-            <ArrowLeftIcon className="size-4" />
-            Go Back
-          </Button>
-        </Link>
+        <Button
+          variant="secondary"
+          className="w-fit"
+          onClick={() => router.back()}
+        >
+          <ArrowLeftIcon className="size-4" />
+          Go Back
+        </Button>
 
         <Link href={`/vault/${id}/settings/apps`}>
           <Button variant="outline" size="icon">
@@ -131,9 +138,29 @@ export default function VaultExploreEmbeddedPage() {
           <div className="w-full h-full rounded-md flex items-center justify-center">
             <LoadingSpinner />
           </div>
+        ) : isUnknownApp ? (
+          <div className="w-full h-full rounded-md flex flex-col items-center justify-center gap-4 text-muted-foreground">
+            <div className="text-center max-w-md">
+              <h3 className="text-lg font-medium mb-2 text-red-600">
+                Unknown App
+              </h3>
+              <p className="text-sm">
+                This URL is not from a known app in the Petra ecosystem. For
+                security reasons, only known apps can be loaded.
+              </p>
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={() => router.push(`/vault/${id}/explore`)}
+              >
+                Go Back
+              </Button>
+            </div>
+          </div>
         ) : isReady ? (
           <>
             <iframe
+              sandbox="allow-scripts allow-same-origin"
               ref={iframeRef}
               src={url}
               className="w-full h-full rounded-md"

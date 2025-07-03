@@ -48,9 +48,9 @@ export function UnknownDappWarning({
               <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
               <div className="flex-1 space-y-4">
                 <div>
-                  <h3 className="font-semibold text-lg">Unknown Application</h3>
+                  <h3 className="font-semibold text-lg">Application Warning</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    This application is not a verified dapp in our ecosystem.
+                    Interacting with this app may expose you to risks.
                   </p>
                 </div>
 
@@ -85,7 +85,7 @@ export function UnknownDappWarning({
                     htmlFor="confirm-risk"
                     className="text-xs cursor-pointer"
                   >
-                    I understand the risks and want to proceed to this unknown
+                    I understand the risks and want to proceed to this
                     application
                   </Label>
                 </div>

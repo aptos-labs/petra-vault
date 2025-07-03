@@ -11,7 +11,6 @@ import { UnknownDappWarning } from '@/components/ui/UnknownDappWarning';
 import { useActiveVault } from '@/context/ActiveVaultProvider';
 import { useAppSettings } from '@/context/useAppSettings';
 import { usePetraEcosystemApps } from '@/hooks/usePetraEcosystemApps';
-import { isKnownEcosystemApp } from '@/lib/ecosystem';
 import { PetraVaultApprovalClient } from '@/wallet/PetraVaultApprovalClient';
 import { PetraVaultRequestHandler } from '@/wallet/PetraVaultRequestHandler';
 import { useAptosCore } from '@aptos-labs/react';
@@ -77,26 +76,18 @@ export default function VaultExploreSearchPage() {
       return;
     }
 
-    // Now we have the data, check if the app is known
-    const ecosystemApps = ecosystemAppsData?.data;
-    const isKnown = isKnownEcosystemApp(url, ecosystemApps);
+    // Check if user has settings to ignore warnings for this domain
+    const settings = getSettingsForUrl(url);
 
-    if (!isKnown) {
-      // Check if user has settings to ignore warnings for this domain
-      const settings = getSettingsForUrl(url);
-
-      if (settings.ignoreUnknownAppWarning) {
-        // Skip warning and go directly to the app
-        setShowWarning(false);
-        setIsReady(true);
-      } else {
-        // Show warning as usual
-        setShowWarning(true);
-        setIsReady(false);
-      }
-    } else {
+    if (settings.ignoreUnknownAppWarning) {
+      // Skip warning and go directly to the app
       setShowWarning(false);
       setIsReady(true);
+      setIsIframeLoading(true);
+    } else {
+      // Show warning for all apps by default
+      setShowWarning(true);
+      setIsReady(false);
     }
   }, [url, ecosystemAppsData, isLoadingApps, getSettingsForUrl]);
 
@@ -194,6 +185,7 @@ export default function VaultExploreSearchPage() {
         ) : isReady ? (
           <>
             <iframe
+              sandbox="allow-scripts allow-same-origin"
               ref={iframeRef}
               src={url}
               className="w-full h-full rounded-md border"

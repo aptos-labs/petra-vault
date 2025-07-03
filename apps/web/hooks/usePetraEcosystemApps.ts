@@ -29,7 +29,9 @@ export const usePetraEcosystemApps = () => {
   return useQuery({
     queryKey: ['petra-ecosystem-apps'],
     queryFn: async () => {
-      const response = await fetch(`${Endpoints.PETRA_PRICING}/ecosystem/v2/list?platform=web`);
+      const response = await fetch(
+        `${Endpoints.PETRA_PRICING}/ecosystem/v2/list?platform=frame`
+      );
       return (await response.json()) as EcosystemAppsResponse;
     }
   });

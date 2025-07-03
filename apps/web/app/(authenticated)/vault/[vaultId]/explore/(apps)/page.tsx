@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { usePetraEcosystemApps, fallbackEcosystemApps } from '@/lib/ecosystem';
+import { fallbackEcosystemApps } from '@/lib/ecosystem';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ArrowTopRightIcon } from '@radix-ui/react-icons';
@@ -15,17 +15,23 @@ import {
 import useAnalytics from '@/hooks/useAnalytics';
 import { useIsMobile } from '@/hooks/useMobile';
 import { LoadingSpinner } from '@/components/LoaderSpinner';
+import { usePetraEcosystemApps } from '@/hooks/usePetraEcosystemApps';
+import { EcosystemApp } from '@/hooks/usePetraEcosystemApps';
 
 export default function VaultExplorePage() {
   const trackEvent = useAnalytics();
   const { id } = useActiveVault();
   const isMobile = useIsMobile();
 
-  // Fetch ecosystem apps from API
-  const { data: ecosystemAppsData, isLoading, error } = usePetraEcosystemApps();
-  
-  // Use API data if available, otherwise fallback to hardcoded apps
-  const ecosystemApps = ecosystemAppsData?.data || fallbackEcosystemApps;
+  const {
+    data: ecosystemAppsData,
+    isLoading,
+    error,
+    isSuccess
+  } = usePetraEcosystemApps();
+
+  const ecosystemApps: EcosystemApp[] =
+    ecosystemAppsData?.data || fallbackEcosystemApps;
 
   const { wallets = [], notDetectedWallets = [] } = useWallet();
 
@@ -70,73 +76,75 @@ export default function VaultExplorePage() {
   return (
     <div className="flex-1 flex flex-col">
       <br />
-      {/* Loading state */}
       {isLoading && (
         <div className="flex justify-center items-center py-12">
           <LoadingSpinner />
         </div>
       )}
-      
-      {/* Error state - show fallback apps */}
-      {error && !isLoading && (
+
+      {error && (
         <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
           <p className="text-sm text-yellow-800">
             Unable to load latest apps. Showing cached apps.
           </p>
         </div>
       )}
-      
-      {/* Apps */}
-      {!isLoading && (
+
+      {isSuccess && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {ecosystemApps
-            .filter((app) => app.link) // Only show apps with links (exclude widgets)
+            .filter((app) => app.link !== undefined)
             .map((app) => (
-            <Link
-              key={app.name}
-              href={`/vault/${id}/explore/embedded?url=${app.link}`}
-              onClick={() =>
-                trackEvent('view_app', { app_name: app.name, app_url: app.link })
-              }
-            >
-              <Card className="hover:bg-accent/30 transition-all cursor-pointer">
-                <CardContent>
-                  <div className="flex justify-between gap-4">
-                    <div className="flex flex-1 flex-col gap-2">
-                      <p className="font-medium font-display">{app.name}</p>
-                      <div className="flex items-center gap-2  w-full flex-wrap">
-                        {app.categories.map((category) => (
-                          <Badge
-                            key={category}
-                            variant="secondary"
-                            className="capitalize text-xs"
-                          >
-                            {category}
-                          </Badge>
-                        ))}
+              <Link
+                key={app.name}
+                href={`/vault/${id}/explore/embedded?url=${app.link}`}
+                onClick={() =>
+                  trackEvent('view_app', {
+                    app_name: app.name,
+                    app_url: app.link!
+                  })
+                }
+              >
+                <Card className="hover:bg-accent/30 transition-all cursor-pointer">
+                  <CardContent>
+                    <div className="flex justify-between gap-4">
+                      <div className="flex flex-1 flex-col gap-2">
+                        <p className="font-medium font-display">{app.name}</p>
+                        <div className="flex items-center gap-2  w-full flex-wrap">
+                          {app.categories.map((category) => (
+                            <Badge
+                              key={category}
+                              variant="secondary"
+                              className="capitalize text-xs"
+                            >
+                              {category}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
+                      <img
+                        src={app.logoUrl}
+                        alt={app.name}
+                        className="w-8 h-8 rounded-full"
+                      />
                     </div>
-                    <img
-                      src={app.logoUrl}
-                      alt={app.name}
-                      className="w-8 h-8 rounded-full"
-                    />
-                  </div>
 
-                  <Separator className="my-4" />
+                    <Separator className="my-4" />
 
-                  <div className="text-xs text-muted-foreground flex justify-between gap-2">
-                    <p className="flex-1">{app.description}</p>
-                    <Button variant="ghost" size="icon">
-                      <ArrowTopRightIcon className="size-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                    <div className="text-xs text-muted-foreground flex justify-between gap-2">
+                      <p className="flex-1">{app.description}</p>
+                      <Button variant="ghost" size="icon">
+                        <ArrowTopRightIcon className="size-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
         </div>
       )}
+      <br />
+      <br />
     </div>
   );
 }

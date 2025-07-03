@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { UnknownDappWarning } from '@/components/ui/UnknownDappWarning';
 import { useActiveVault } from '@/context/ActiveVaultProvider';
 import { useAppSettings } from '@/context/useAppSettings';
-import { isKnownEcosystemApp, usePetraEcosystemApps } from '@/lib/ecosystem';
+import { usePetraEcosystemApps } from '@/hooks/usePetraEcosystemApps';
+import { isKnownEcosystemApp } from '@/lib/ecosystem';
 import { PetraVaultApprovalClient } from '@/wallet/PetraVaultApprovalClient';
 import { PetraVaultRequestHandler } from '@/wallet/PetraVaultRequestHandler';
 import { useAptosCore } from '@aptos-labs/react';
@@ -24,8 +25,8 @@ export default function VaultExploreSearchPage() {
   const { id, vaultAddress, network } = useActiveVault();
   const { getSettingsForUrl, updateSettingsForUrl } = useAppSettings();
 
-  // Fetch ecosystem apps data
-  const { data: ecosystemAppsData, isLoading: isLoadingApps } = usePetraEcosystemApps();
+  const { data: ecosystemAppsData, isLoading: isLoadingApps } =
+    usePetraEcosystemApps();
 
   const core = useAptosCore();
 
@@ -66,7 +67,6 @@ export default function VaultExploreSearchPage() {
     }
   };
 
-  // Effect to handle warning logic when URL changes or apps data loads
   useEffect(() => {
     if (!url) return;
 

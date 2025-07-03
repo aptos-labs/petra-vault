@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { UnknownDappWarning } from '@/components/ui/UnknownDappWarning';
 import { useActiveVault } from '@/context/ActiveVaultProvider';
 import { useAppSettings } from '@/context/useAppSettings';
-import { isKnownEcosystemApp, usePetraEcosystemApps } from '@/lib/ecosystem';
+import { usePetraEcosystemApps } from '@/hooks/usePetraEcosystemApps';
+import { isKnownEcosystemApp } from '@/lib/ecosystem';
 import { PetraVaultApprovalClient } from '@/wallet/PetraVaultApprovalClient';
 import { PetraVaultRequestHandler } from '@/wallet/PetraVaultRequestHandler';
 import { useAptosCore } from '@aptos-labs/react';
@@ -27,8 +28,8 @@ export default function VaultExploreEmbeddedPage() {
   const router = useRouter();
   const core = useAptosCore();
 
-  // Fetch ecosystem apps data
-  const { data: ecosystemAppsData, isLoading: isLoadingApps } = usePetraEcosystemApps();
+  const { data: ecosystemApps, isLoading: isLoadingApps } =
+    usePetraEcosystemApps();
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
@@ -81,8 +82,7 @@ export default function VaultExploreEmbeddedPage() {
     }
 
     // Now we have the data, check if the app is known
-    const ecosystemApps = ecosystemAppsData?.data;
-    const isKnownApp = isKnownEcosystemApp(url, ecosystemApps);
+    const isKnownApp = isKnownEcosystemApp(url, ecosystemApps?.data);
 
     // Show warning for unknown apps, but only if URL exists and is not known
     if (!isKnownApp) {
@@ -103,7 +103,7 @@ export default function VaultExploreEmbeddedPage() {
       setIsReady(true);
       setIsIframeLoading(true);
     }
-  }, [url, ecosystemAppsData, isLoadingApps, getSettingsForUrl]);
+  }, [url, ecosystemApps, isLoadingApps, getSettingsForUrl]);
 
   if (!url) {
     return <div>No URL provided</div>;
@@ -125,10 +125,10 @@ export default function VaultExploreEmbeddedPage() {
           </Button>
         </Link>
       </div>
-      <div className="relative flex-1">
+      <div className="relative flex-1 border rounded-md">
         {/* Show loading while apps data is being fetched */}
         {isLoadingApps ? (
-          <div className="w-full h-full rounded-md border flex items-center justify-center">
+          <div className="w-full h-full rounded-md flex items-center justify-center">
             <LoadingSpinner />
           </div>
         ) : isReady ? (
@@ -136,7 +136,7 @@ export default function VaultExploreEmbeddedPage() {
             <iframe
               ref={iframeRef}
               src={url}
-              className="w-full h-full rounded-md border"
+              className="w-full h-full rounded-md"
               onLoad={handleIframeLoad}
             />
             {isIframeLoading && (
@@ -146,7 +146,7 @@ export default function VaultExploreEmbeddedPage() {
             )}
           </>
         ) : (
-          <div className="w-full h-full rounded-md border flex items-center justify-center">
+          <div className="w-full h-full rounded-md flex items-center justify-center">
             <LoadingSpinner />
           </div>
         )}

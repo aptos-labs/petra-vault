@@ -1,13 +1,9 @@
 import { EcosystemApp } from '@/hooks/usePetraEcosystemApps';
 
-// Re-export the hook and types for convenience
-export { usePetraEcosystemApps, type EcosystemApp } from '@/hooks/usePetraEcosystemApps';
-
-// Keep the old hardcoded apps as fallback (can be removed later)
-export const fallbackEcosystemApps = [
+export const fallbackEcosystemApps: EcosystemApp[] = [
   {
     categories: ['defi', 'liquidStaking'],
-    platform: ['mobile', 'extension', 'web'],
+    platform: ['mobile', 'extension', 'web', 'frame'],
     type: 'dapp',
     description: 'Liquidity Staking Protocol on Aptos',
     isPopular: true,
@@ -22,7 +18,7 @@ export const fallbackEcosystemApps = [
   },
   {
     categories: ['defi', 'entertainment'],
-    platform: ['mobile', 'extension', 'web'],
+    platform: ['mobile', 'extension', 'web', 'frame'],
     type: 'dapp',
     description: 'Presented by Econia Labs',
     isPopular: true,
@@ -37,7 +33,7 @@ export const fallbackEcosystemApps = [
   },
   {
     categories: ['defi', 'stablecoins', 'launchpads'],
-    platform: ['mobile', 'extension', 'web'],
+    platform: ['mobile', 'extension', 'web', 'frame'],
     type: 'dapp',
     description: 'DeFi App – Powered by Move, Now Live on Aptos',
     isPopular: false,
@@ -52,7 +48,7 @@ export const fallbackEcosystemApps = [
   },
   {
     categories: ['defi', 'bridges'],
-    platform: ['mobile', 'extension', 'web'],
+    platform: ['mobile', 'extension', 'web', 'frame'],
     type: 'dapp',
     description: 'Cross-chain aggregator',
     isPopular: false,
@@ -66,7 +62,7 @@ export const fallbackEcosystemApps = [
   },
   {
     categories: ['defi', 'swaps'],
-    platform: ['mobile', 'extension', 'web'],
+    platform: ['mobile', 'extension', 'web', 'frame'],
     type: 'dapp',
     description: 'App for DeFi. Building the Future of web3',
     isPopular: false,
@@ -81,6 +77,8 @@ export const fallbackEcosystemApps = [
   },
   {
     categories: ['defi', 'lending'],
+    platform: ['mobile', 'extension', 'web', 'frame'],
+    type: 'dapp',
     description: 'Universal lending market connecting liquidity on Aptos',
     isPopular: false,
     link: 'https://echelon.market/',
@@ -93,6 +91,8 @@ export const fallbackEcosystemApps = [
   },
   {
     categories: ['defi', 'explorer'],
+    platform: ['mobile', 'extension', 'web', 'frame'],
+    type: 'dapp',
     description: 'Aptos blockchain explorer by Aptos Labs',
     isPopular: false,
     link: 'https://explorer.aptoslabs.com/?network=mainnet',
@@ -105,6 +105,8 @@ export const fallbackEcosystemApps = [
   },
   {
     categories: ['defi', 'swaps'],
+    platform: ['mobile', 'extension', 'web', 'frame'],
+    type: 'dapp',
     description:
       'Fully on-chain hybrid orderbook AMM DEX built natively for Aptos.',
     isPopular: true,
@@ -123,9 +125,12 @@ export const fallbackEcosystemApps = [
  * @param url - The URL to check
  * @param ecosystemApps - Array of ecosystem apps to check against (optional, uses fallback if not provided)
  */
-export function isKnownEcosystemApp(url: string, ecosystemApps?: EcosystemApp[]): boolean {
+export function isKnownEcosystemApp(
+  url: string,
+  ecosystemApps?: EcosystemApp[]
+): boolean {
   const appsToCheck = ecosystemApps || fallbackEcosystemApps;
-  
+
   try {
     const targetUrl = new URL(url);
     const targetOrigin = targetUrl.origin;
@@ -134,7 +139,7 @@ export function isKnownEcosystemApp(url: string, ecosystemApps?: EcosystemApp[])
     return appsToCheck.some((app) => {
       // Skip apps without a link (e.g., widgets)
       if (!app.link) return false;
-      
+
       try {
         const appUrl = new URL(app.link);
         const appOrigin = appUrl.origin;

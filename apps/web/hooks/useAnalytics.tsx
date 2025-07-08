@@ -14,6 +14,7 @@ type AnalyticsEvent = {
     create_add_owner_proposal: { hash: string };
     create_remove_owner_proposal: { hash: string };
     create_publish_contract_proposal: { hash: string };
+    create_update_signatures_required_proposal: { hash: string };
     vote_proposal: { hash: string; action?: 'approve' | 'reject' };
     execute_proposal: { hash: string };
     remove_proposal: { hash: string };

@@ -285,7 +285,7 @@ export default function ProposalPage() {
                       <LoadingSpinner />
                     </div>
                   </motion.div>
-                ) : simulation.isError ? (
+                ) : simulation.isSimulationError ? (
                   <motion.div
                     key="simulation-error"
                     initial={{ opacity: 0, filter: 'blur(10px)' }}
@@ -298,7 +298,7 @@ export default function ProposalPage() {
                       This simulation shows a preview of the transaction&apos;s
                       details when executed.
                     </CardDescription>
-                    <div className="w-full flex justify-center items-center">
+                    <div className="w-full flex">
                       <div className="text-destructive bg-destructive/10 p-4 rounded-lg text-sm border border-destructive border-dashed">
                         <>{simulation.simulationError}</>
                       </div>

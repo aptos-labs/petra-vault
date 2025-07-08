@@ -96,7 +96,8 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
           sender: vaultAddress,
           payload: new TransactionPayloadEntryFunction(
             multisigPayload.transaction_payload
-          )
+          ),
+          feePayerAddress: AccountAddress.from(account.address)
         });
       },
       refetchInterval: 20 * 1000,
@@ -106,12 +107,8 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
     const simulation = useSimulateTransaction({
       transaction: simulationPayload.data ?? undefined,
       network: { network },
-      sender: account?.address,
-      options: {
-        estimateMaxGasAmount: true,
-        estimateGasUnitPrice: true,
-        estimatePrioritizedGasUnitPrice: true
-      }
+      sender: AccountAddress.from(vaultAddress),
+      withFeePayer: true
     });
 
     const transactionPayload = useQuery({

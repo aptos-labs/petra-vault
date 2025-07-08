@@ -37,6 +37,10 @@ export const Abis = {
     parameters: [new TypeTagAddress()],
     typeParameters: []
   },
+  '0x1::multisig_account::update_signatures_required': {
+    parameters: [new TypeTagU64()],
+    typeParameters: []
+  },
   '0x1::code::publish_package_txn': {
     typeParameters: [],
     parameters: [TypeTagVector.u8(), new TypeTagVector(TypeTagVector.u8())]

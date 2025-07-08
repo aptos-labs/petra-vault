@@ -2,6 +2,7 @@
 
 import AddOwnerModal from '@/components/modals/AddOwnerModal';
 import RemoveOwnerModal from '@/components/modals/RemoveOwnerModal';
+import UpdateSignaturesRequiredModal from '@/components/modals/UpdateSignaturesRequiredModal';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -16,7 +17,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useActiveVault } from '@/context/ActiveVaultProvider';
 import { useVaults } from '@/context/useVaults';
 import { getExplorerUrl } from '@aptos-labs/js-pro';
-import { ExternalLinkIcon, PlusIcon, TrashIcon } from '@radix-ui/react-icons';
+import {
+  ExternalLinkIcon,
+  PlusIcon,
+  TrashIcon,
+  Pencil1Icon
+} from '@radix-ui/react-icons';
 import { AptosAvatar } from 'aptos-avatars-react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -45,6 +51,8 @@ export default function VaultSettingsPage() {
   const [uniqueAddOwnerModalKey, setUniqueAddOwnerModalKey] = useState<number>(
     Math.random()
   );
+  const [uniqueUpdateSignaturesModalKey, setUniqueUpdateSignaturesModalKey] =
+    useState<number>(Math.random());
 
   const { deleteVault, updateVault } = useVaults();
   const { network, owners, vaultAddress, signaturesRequired, isOwner, vault } =
@@ -193,17 +201,51 @@ export default function VaultSettingsPage() {
               {signaturesRequired.isLoading ? (
                 <Skeleton className="w-full h-8" />
               ) : (
-                <div className="flex items-center mt-4 gap-2 font-display">
-                  <span
-                    className="font-semibold"
-                    data-testid={`signatures-required-count-${signaturesRequired.data}`}
-                  >
-                    {signaturesRequired.data} signature
-                    {signaturesRequired.data === 1 ? '' : 's'}
-                  </span>{' '}
-                  <span className="text-muted-foreground">
-                    required out of {owners.data?.length ?? 0} owners
-                  </span>
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center mt-4 gap-2 font-display">
+                    <span
+                      className="font-semibold"
+                      data-testid={`signatures-required-count-${signaturesRequired.data}`}
+                    >
+                      {signaturesRequired.data} signature
+                      {signaturesRequired.data === 1 ? '' : 's'}
+                    </span>{' '}
+                    <span className="text-muted-foreground">
+                      required out of {owners.data?.length ?? 0} owners
+                    </span>
+                  </div>
+                  {isOwner && (
+                    <Dialog
+                      onOpenChange={(isOpen) => {
+                        if (!isOpen)
+                          setUniqueUpdateSignaturesModalKey(Math.random());
+                      }}
+                    >
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={
+                            !owners.data ||
+                            !signaturesRequired.data ||
+                            owners.data.length <= 1
+                          }
+                          data-testid="update-signatures-required-button"
+                          className="w-fit"
+                        >
+                          <Pencil1Icon />
+                          Update Signatures Required
+                        </Button>
+                      </DialogTrigger>
+                      <UpdateSignaturesRequiredModal
+                        key={uniqueUpdateSignaturesModalKey}
+                        ownersCount={owners.data?.length ?? 0}
+                        currentSignaturesRequired={Number(
+                          signaturesRequired.data ?? 1
+                        )}
+                      />
+                    </Dialog>
+                  )}
                 </div>
               )}
             </CardContent>

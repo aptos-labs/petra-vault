@@ -2,6 +2,7 @@ import { NetworkInfo } from '@aptos-labs/js-pro';
 import { useClients } from '@aptos-labs/react';
 import {
   AccountAddress,
+  Network,
   TransactionResponseType,
   UserTransactionResponse
 } from '@aptos-labs/ts-sdk';
@@ -51,8 +52,13 @@ export default function useMultisigExecutionEvents({
 }: UseMultisigExecutionEventsParameters) {
   const { aptos, client } = useClients({ network });
 
+  const enabled = Boolean(
+    network?.network !== Network.DEVNET && (options.enabled ?? true)
+  );
+
   return useInfiniteQuery({
     ...options,
+    enabled,
     queryKey: ['multisig-execution-events', address, network],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {

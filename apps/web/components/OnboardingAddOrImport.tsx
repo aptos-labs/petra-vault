@@ -24,7 +24,7 @@ import { Dialog, DialogTrigger } from './ui/dialog';
 import UploadImportJSONModal from './modals/UploadImportJSONModal';
 import { Vault } from '@/lib/types/vaults';
 import { useRouter } from 'next/navigation';
-import { AccountAddress } from '@aptos-labs/ts-sdk';
+import { AccountAddress, Network } from '@aptos-labs/ts-sdk';
 import useAnalytics from '@/hooks/useAnalytics';
 
 export default function OnboardingAddOrImport() {
@@ -182,6 +182,14 @@ export default function OnboardingAddOrImport() {
                   className="flex flex-col items-center gap-2"
                 >
                   <LoadingSpinner className="my-4" />
+                </div>
+              ) : network.network === Network.DEVNET ? (
+                <div className="pt-2">
+                  <div className="flex flex-col items-center gap-2 border border-dashed bg-secondary rounded-sm">
+                    <p className="text-muted-foreground text-xs font-display py-8">
+                      Vault discovery is not available on Devnet.
+                    </p>
+                  </div>
                 </div>
               ) : filteredDiscoveredAccounts?.length === 0 ? (
                 <div className="pt-2">

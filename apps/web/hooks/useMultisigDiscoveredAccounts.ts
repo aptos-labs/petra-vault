@@ -3,7 +3,7 @@ import {
   NetworkInfo
 } from '@aptos-labs/js-pro';
 import { useAptosCore } from '@aptos-labs/react';
-import { AccountAddress, GetEventsResponse } from '@aptos-labs/ts-sdk';
+import { AccountAddress, GetEventsResponse, Network } from '@aptos-labs/ts-sdk';
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 
 type UseMultisigDiscoveredAccountResult = AccountAddress[];
@@ -26,7 +26,11 @@ export default function useMultisigDiscoveredAccounts({
 
   const activeNetwork = network ?? core.network;
 
-  const enabled = Boolean(address && (options.enabled ?? true));
+  const enabled = Boolean(
+    address &&
+      activeNetwork.network !== Network.DEVNET &&
+      (options.enabled ?? true)
+  );
 
   const query = useQuery<UseMultisigDiscoveredAccountResult>({
     staleTime: 1000 * 60 * 1,

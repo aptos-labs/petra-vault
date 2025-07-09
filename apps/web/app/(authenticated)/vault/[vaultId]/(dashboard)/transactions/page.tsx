@@ -11,6 +11,7 @@ import useMultisigExecutionEvents, {
 import { hasWindow } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useMemo } from 'react';
+import { Network } from '@aptos-labs/ts-sdk';
 
 export default function VaultTransactionsPage() {
   const { vaultAddress, network, isOwner } = useActiveVault();
@@ -102,6 +103,10 @@ export default function VaultTransactionsPage() {
               </motion.div>
             ))}
           </motion.div>
+        ) : network === Network.DEVNET ? (
+          <div className="text-center py-16 font-display text-muted-foreground bg-secondary border border-dashed rounded-lg">
+            Historical transactions are not available on Devnet.
+          </div>
         ) : groupedTransactions &&
           Object.entries(groupedTransactions).length === 0 ? (
           <motion.div

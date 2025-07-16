@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+
+# Allow all crawlers to access the main pages
+Allow: /login
+Allow: /onboarding
+
+# Disallow private/dynamic content that shouldn't be indexed
+Disallow: /vault/*/
+Disallow: /api/
+Disallow: /sentry/
+
+# Sitemap location
+Sitemap: https://vault.petra.app/sitemap.xml
+
+# Crawl delay (optional - helps prevent overwhelming the server)
+Crawl-delay: 1

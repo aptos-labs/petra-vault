@@ -1,6 +1,26 @@
+import { Metadata } from 'next';
 import Login from '@/components/Login';
-import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'Login to Petra Vault',
+  description:
+    'Securely access your Petra Vault multisig wallet on the Aptos Network. Connect your wallet to manage shared crypto assets and proposals.',
+  openGraph: {
+    title: 'Login to Petra Vault',
+    description:
+      'Securely access your Petra Vault multisig wallet on the Aptos Network.',
+    url: 'https://vault.petra.app/login'
+  },
+  twitter: {
+    title: 'Login to Petra Vault',
+    description:
+      'Securely access your Petra Vault multisig wallet on the Aptos Network.'
+  },
+  alternates: {
+    canonical: 'https://vault.petra.app/login'
+  }
+};
 
 export default function LoginPage() {
   return (
@@ -12,7 +32,7 @@ export default function LoginPage() {
             className="flex items-center justify-center font-medium whitespace-pre"
           >
             <img src="/petra_logo.png" alt="Petra Logo" className="w-4 mr-2" />
-            Petra Vault <Badge variant="outline">Beta</Badge>
+            <h1>Petra Vault</h1>
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">

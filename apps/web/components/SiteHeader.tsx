@@ -7,7 +7,6 @@ import { Separator } from '@/components/ui/separator';
 import { useSidebar } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/useMobile';
-import { Badge } from './ui/badge';
 
 export function SiteHeader() {
   const isMobile = useIsMobile();
@@ -37,7 +36,6 @@ export function SiteHeader() {
         >
           <img src="/petra_logo.png" alt="Petra Vault" className="w-4" />
           Petra Vault
-          <Badge variant="outline">Beta</Badge>
         </Link>
       </div>
     </header>

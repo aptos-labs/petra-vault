@@ -14,22 +14,39 @@ const workSans = Work_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Petra Vault',
-  description: 'Non-custodial multisig wallet solution on the Aptos Network',
+  title: 'Petra Vault by Aptos',
+  description:
+    'Secure, non-custodial multisig wallet solution on the Aptos Network. Create shared wallets, manage crypto assets with multiple signatures.',
   openGraph: {
     title: 'Petra Vault',
-    description: 'Non-custodial multisig wallet solution on the Aptos Network',
+    description:
+      'Secure, non-custodial multisig wallet solution on the Aptos Network. Create shared wallets, manage crypto assets with multiple signatures.',
     images: [{ url: '/og_image.jpeg', width: 1200, height: 630 }],
     url: 'https://vault.petra.app',
     type: 'website',
     siteName: 'Petra Vault'
   },
+  alternates: { canonical: 'https://vault.petra.app' },
+  keywords: [
+    'Petra Vault',
+    'Aptos',
+    'multisig wallet',
+    'multi-signature',
+    'non-custodial',
+    'crypto wallet',
+    'Aptos Network'
+  ],
+  creator: 'Aptos Labs',
+  publisher: 'Aptos Labs',
+  authors: [{ name: 'Aptos Labs', url: 'https://aptoslabs.com' }],
   twitter: {
     card: 'summary_large_image',
     title: 'Petra Vault',
-    description: 'Non-custodial multisig wallet solution on the Aptos Network',
+    description:
+      'Secure, non-custodial multisig wallet solution on the Aptos Network. Create shared wallets, manage crypto assets with multiple signatures.',
     images: [{ url: '/og_image.jpeg', width: 1200, height: 630 }],
-    site: '@PetraWallet'
+    site: '@PetraWallet',
+    creator: '@PetraWallet'
   },
   metadataBase: new URL('https://vault.petra.app')
 };

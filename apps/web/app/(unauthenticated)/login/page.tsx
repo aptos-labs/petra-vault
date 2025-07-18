@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import Login from '@/components/Login';
 import Link from 'next/link';
+import HackenBadge from '@/components/HackenBadge';
 
 export const metadata: Metadata = {
   title: 'Login to Petra Vault',
@@ -39,6 +40,9 @@ export default function LoginPage() {
           <div className="w-full">
             <Login />
           </div>
+        </div>
+        <div className="flex justify-center">
+          <HackenBadge />
         </div>
       </div>
       <div className="relative hidden bg-muted lg:block">

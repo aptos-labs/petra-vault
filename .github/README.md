@@ -60,6 +60,10 @@ And that's not it, explore the rest of the features yourself at [vault.petra.app
 
 For documentation, please refer to the [petra.app/vault](https://petra.app/vault).
 
+## Audits
+
+Petra Vault has been audited by [Hacken](https://hacken.io/audits/petra-vault).
+
 ## Getting Started
 
 ### Prerequisites

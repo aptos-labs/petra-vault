@@ -160,7 +160,7 @@ export default function VaultExploreEmbeddedPage() {
         ) : isReady ? (
           <>
             <iframe
-              sandbox="allow-scripts allow-same-origin"
+              sandbox="allow-scripts allow-same-origin allow-forms"
               ref={iframeRef}
               src={url}
               className="w-full h-full rounded-md"

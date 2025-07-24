@@ -10,7 +10,7 @@ export default function AuthenticationGuard({ children }: PropsWithChildren) {
 
   useEffect(() => {
     if (!isLoading && (!connected || !account)) {
-      router.push('/login');
+      router.push('/');
     }
   }, [connected, isLoading, router, account]);
 

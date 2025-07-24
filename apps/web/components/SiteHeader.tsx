@@ -30,7 +30,7 @@ export function SiteHeader() {
         )}
 
         <Link
-          href="/"
+          href="/home"
           className="flex items-center gap-3 font-semibold font-display tracking-wide"
           data-testid="site-header-logo"
         >

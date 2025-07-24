@@ -16,7 +16,7 @@ export class OnboardingFixture {
   ) {}
 
   async connectWallet(accounts: Ed25519Account, network: Network) {
-    await this.page.goto('/login');
+    await this.page.goto('/');
 
     // Wait for the page to load.
     await this.page.waitForTimeout(1000);
@@ -93,6 +93,6 @@ export class OnboardingFixture {
 
     await this.page.getByTestId('confirm-import-vaults-json-button').click();
 
-    await this.page.waitForURL(/\//);
+    await this.page.waitForURL(/\/home/);
   }
 }

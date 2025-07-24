@@ -2,7 +2,7 @@ User-agent: *
 Allow: /
 
 # Allow all crawlers to access the main pages
-Allow: /login
+Allow: /home
 Allow: /onboarding
 
 # Disallow private/dynamic content that shouldn't be indexed

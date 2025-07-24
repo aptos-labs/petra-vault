@@ -302,7 +302,7 @@ export default function VaultSettingsPage() {
                         onClick={() => {
                           deleteVault(AccountAddress.from(vaultAddress));
                           trackEvent('delete_vault_success', {});
-                          router.push('/');
+                          router.push('/home');
                         }}
                         data-testid="confirm-delete-vault-button"
                       >

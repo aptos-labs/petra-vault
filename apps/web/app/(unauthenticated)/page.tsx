@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: 'Login to Petra Vault',
     description:
       'Securely access your Petra Vault multisig wallet on the Aptos Network.',
-    url: 'https://vault.petra.app/login'
+    url: 'https://vault.petra.app'
   },
   twitter: {
     title: 'Login to Petra Vault',
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
       'Securely access your Petra Vault multisig wallet on the Aptos Network.'
   },
   alternates: {
-    canonical: 'https://vault.petra.app/login'
+    canonical: 'https://vault.petra.app'
   }
 };
 

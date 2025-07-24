@@ -62,7 +62,7 @@ export default function Login({
 
   useEffect(() => {
     if (connected && account) {
-      router.push('/');
+      router.push('/home');
     }
   }, [connected, router, account]);
 

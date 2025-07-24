@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { parseUnits } from '@aptos-labs/js-pro';
 import { Skeleton } from '@/components/ui/skeleton';
 import CoinAvatar from '@/components/CoinAvatar';
+import TokenPriceChart from '@/components/TokenPriceChart';
 
 export default function VaultPage() {
   const { coins } = useCoins();
@@ -139,6 +140,13 @@ export default function VaultPage() {
                         </a>
                       )}
                     </div>
+                  </div>
+
+                  <div className="hidden sm:block">
+                    <TokenPriceChart
+                      address={balance.metadata.assetType}
+                      className="mx-2"
+                    />
                   </div>
 
                   <div className="text-right">

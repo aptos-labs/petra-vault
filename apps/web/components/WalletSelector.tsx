@@ -178,31 +178,53 @@ function ConnectWalletDialog({
           {availableWallets.map((wallet) => (
             <WalletRow key={wallet.name} wallet={wallet} onConnect={close} />
           ))}
-          {!!installableWallets.length && (
-            <ExpandingContainer>
-              <Collapsible className="flex flex-col gap-3">
-                <CollapsibleTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="gap-2"
-                    data-testid="more-wallets-button"
-                  >
-                    More wallets <ChevronDown />
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="flex flex-col gap-3">
-                  {installableWallets.map((wallet) => (
-                    <WalletRow
-                      key={wallet.name}
-                      wallet={wallet}
-                      onConnect={close}
-                    />
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
-            </ExpandingContainer>
-          )}
+
+          {/* Show top 2 installable wallets prominently if no wallets are available */}
+          {!availableWallets.length &&
+            installableWallets
+              .slice(0, 2)
+              .map((wallet) => (
+                <WalletRow
+                  key={wallet.name}
+                  wallet={wallet}
+                  onConnect={close}
+                />
+              ))}
+
+          {/* Show remaining installable wallets in collapsible */}
+          {(() => {
+            const walletsToShow = availableWallets.length
+              ? installableWallets
+              : installableWallets.slice(2);
+
+            return (
+              walletsToShow.length > 0 && (
+                <ExpandingContainer>
+                  <Collapsible className="flex flex-col gap-3">
+                    <CollapsibleTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="gap-2"
+                        data-testid="more-wallets-button"
+                      >
+                        More wallets <ChevronDown />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="flex flex-col gap-3">
+                      {walletsToShow.map((wallet) => (
+                        <WalletRow
+                          key={wallet.name}
+                          wallet={wallet}
+                          onConnect={close}
+                        />
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </ExpandingContainer>
+              )
+            );
+          })()}
         </div>
       </AboutAptosConnect>
     </DialogContent>

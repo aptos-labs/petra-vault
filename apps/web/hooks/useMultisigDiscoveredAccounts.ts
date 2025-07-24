@@ -1,10 +1,28 @@
+import { LONG_FRAMEWORK_ADDRESS } from '@/lib/constants';
+import { normalizeAddress } from '@/lib/address';
+import { isWriteSetChangeWriteResource } from '@/lib/transactions';
+import { getMultisigIndexerClient } from '@/operations';
 import {
+  GetMultisigOwnerActivitiesQuery,
+  Order_By
+} from '@/operations/generated/sdk';
+import {
+  AccountTransaction,
   FetchAccountTransactionsResult,
   NetworkInfo
 } from '@aptos-labs/js-pro';
 import { useAptosCore } from '@aptos-labs/react';
-import { AccountAddress, GetEventsResponse, Network } from '@aptos-labs/ts-sdk';
+import {
+  AccountAddress,
+  Network,
+  TransactionResponseType,
+  UserTransactionResponse
+} from '@aptos-labs/ts-sdk';
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+
+type MultisigCreationTransaction = AccountTransaction & {
+  userTransaction: UserTransactionResponse;
+};
 
 type UseMultisigDiscoveredAccountResult = AccountAddress[];
 
@@ -38,133 +56,153 @@ export default function useMultisigDiscoveredAccounts({
     enabled,
     queryKey: ['multisig-discovered-accounts', address, activeNetwork],
     queryFn: async () => {
+      const multisigIndexerClient = getMultisigIndexerClient(
+        activeNetwork.network
+      );
+
+      if (!multisigIndexerClient)
+        throw new Error(
+          `Multisig indexer client is unavailable for this network: ${activeNetwork}.`
+        );
+
       if (!address) throw new Error('Address is required');
 
-      const { aptos } = core.client.getClients({ network });
-
-      // This promise may take a long time before it's fully resolved. It will paginate through all of the events and
+      // This promise may take a long time before it's fully resolved. It will paginate through all of the owner activities and
       // `create_with_owners` transactions to get all of the multisig accounts that have been created and interacted with.
-      const [events, { creationTransactions, creationMultisigRegisterEvents }] =
-        await Promise.all([
-          (async () => {
-            const data: GetEventsResponse = [];
+      const [activities, creationTransactions] = await Promise.all([
+        (async () => {
+          const data: GetMultisigOwnerActivitiesQuery['multisig_owner_activities'] =
+            [];
 
-            let eventsResponse: GetEventsResponse = [];
-            let eventsOffset = 0;
-            do {
-              eventsResponse = await aptos.getEvents({
-                options: {
-                  orderBy: [{ transaction_version: 'asc' }],
-                  offset: eventsOffset,
-                  limit: 100,
-                  where: {
-                    indexed_type: {
-                      _in: [
-                        '0x1::multisig_account::AddOwners',
-                        '0x1::multisig_account::RemoveOwners',
-                        '0x1::multisig_account::Vote'
-                      ]
-                    },
-                    _or: [
-                      { data: { _contains: { owners_added: [address] } } },
-                      { data: { _contains: { owners_removed: [address] } } },
-                      { data: { _contains: { owner: address } } }
-                    ]
-                  }
+          let activitiesResponse: GetMultisigOwnerActivitiesQuery['multisig_owner_activities'] =
+            [];
+          let activitiesOffset = 0;
+          do {
+            activitiesResponse = (
+              await multisigIndexerClient.getMultisigOwnerActivities({
+                orderBy: [{ version: Order_By.Desc }],
+                limit: 100,
+                offset: activitiesOffset,
+                where: {
+                  _or: [
+                    { owners_added: { _contains: [address] } },
+                    { owners_removed: { _contains: [address] } },
+                    { owner_vote: { _eq: address } }
+                  ]
                 }
-              });
-              eventsOffset += eventsResponse.length;
-              data.push(...eventsResponse);
-            } while (eventsResponse.length === 100);
+              })
+            ).multisig_owner_activities;
+            activitiesOffset += activitiesResponse.length;
+            data.push(...activitiesResponse);
+          } while (activitiesResponse.length === 100);
 
-            return data;
-          })(),
-          (async () => {
-            const creationTransactions = [];
-            const creationMultisigRegisterEvents = [];
+          return data;
+        })(),
+        (async () => {
+          const creationTransactions: MultisigCreationTransaction[] = [];
 
-            let creationTransactionsResponse: FetchAccountTransactionsResult;
-            let creationTransactionsOffset = 0;
-            do {
-              creationTransactionsResponse =
-                await core.client.fetchAccountTransactions({
-                  address,
-                  where: {
-                    user_transaction: {
-                      entry_function_id_str: {
-                        _eq: '0x1::multisig_account::create_with_owners'
-                      }
-                    }
-                  },
-                  limit: 100,
-                  offset: creationTransactionsOffset
-                });
-
-              const { transactions } = creationTransactionsResponse;
-
-              creationTransactionsOffset += transactions.length;
-              creationTransactions.push(...transactions);
-
-              const creationMultisigRegisterEventsResponse =
-                await aptos.getEvents({
-                  options: {
-                    orderBy: [{ transaction_version: 'desc' }],
-                    where: {
-                      indexed_type: {
-                        _in: [
-                          '0x1::account::CoinRegister',
-                          '0x1::account::CoinRegisterEvent'
-                        ]
-                      },
-                      transaction_version: {
-                        _in: transactions.map((t) =>
-                          Number(t.transactionVersion)
-                        )
-                      }
+          let creationTransactionsResponse: FetchAccountTransactionsResult;
+          let creationTransactionsOffset = 0;
+          do {
+            creationTransactionsResponse =
+              await core.client.fetchAccountTransactions({
+                address,
+                where: {
+                  user_transaction: {
+                    entry_function_id_str: {
+                      _eq: '0x1::multisig_account::create_with_owners'
                     }
                   }
-                });
+                },
+                limit: 100,
+                offset: creationTransactionsOffset
+              });
 
-              creationMultisigRegisterEvents.push(
-                ...creationMultisigRegisterEventsResponse
-              );
-            } while (creationTransactionsResponse.transactions.length === 100);
+            const { transactions } = creationTransactionsResponse;
 
-            return { creationTransactions, creationMultisigRegisterEvents };
-          })()
-        ]);
+            creationTransactionsOffset += transactions.length;
+
+            const creationMultisigUserTransactions = await Promise.all(
+              transactions.map((t) =>
+                core.client.fetchTransaction({
+                  ledgerVersion: Number(t.transactionVersion),
+                  network: activeNetwork
+                })
+              )
+            );
+
+            creationTransactions.push(
+              ...(transactions
+                .map((t) => {
+                  const userTransaction = creationMultisigUserTransactions.find(
+                    (ut) =>
+                      ut.type === TransactionResponseType.User &&
+                      Number(ut.version) === Number(t.transactionVersion)
+                  );
+
+                  if (!userTransaction) return undefined;
+
+                  return { ...t, userTransaction };
+                })
+                .filter(Boolean) as MultisigCreationTransaction[])
+            );
+          } while (creationTransactionsResponse.transactions.length === 100);
+
+          return creationTransactions;
+        })()
+      ]);
 
       const discoveredAccounts: {
         [account: string]: { hasVoted: boolean };
       } = {};
 
       creationTransactions.forEach((transaction) => {
-        const multisigRegisterEvent = creationMultisigRegisterEvents.find(
-          (t) =>
-            t.transaction_version === Number(transaction.transactionVersion)
-        );
+        const { userTransaction } = transaction;
 
-        if (!multisigRegisterEvent) return;
-
-        discoveredAccounts[
-          multisigRegisterEvent.data.account ??
-            multisigRegisterEvent.account_address
-        ] = { hasVoted: true };
+        userTransaction.changes.forEach((change) => {
+          if (
+            isWriteSetChangeWriteResource(change) &&
+            change.data.type === '0x1::multisig_account::MultisigAccount'
+          ) {
+            discoveredAccounts[normalizeAddress(change.address)] = {
+              hasVoted: true
+            };
+          }
+        });
       });
 
-      events.forEach((event) => {
-        if (event.indexed_type === '0x1::multisig_account::AddOwners') {
-          discoveredAccounts[event.data.multisig_account] = {
+      console.log('discoveredAccounts', discoveredAccounts);
+
+      activities.forEach((activity) => {
+        if (
+          activity.event_type ===
+            `${LONG_FRAMEWORK_ADDRESS}::multisig_account::AddOwners` ||
+          activity.event_type ===
+            `${LONG_FRAMEWORK_ADDRESS}::multisig_account::AddOwnersEvent`
+        ) {
+          discoveredAccounts[normalizeAddress(activity.multisig_account)] = {
             hasVoted: false
           };
         }
 
-        if (event.indexed_type === '0x1::multisig_account::RemoveOwners') {
-          delete discoveredAccounts[event.data.multisig_account];
+        if (
+          activity.event_type ===
+            `${LONG_FRAMEWORK_ADDRESS}::multisig_account::RemoveOwners` ||
+          activity.event_type ===
+            `${LONG_FRAMEWORK_ADDRESS}::multisig_account::RemoveOwnersEvent`
+        ) {
+          delete discoveredAccounts[
+            normalizeAddress(activity.multisig_account)
+          ];
         }
 
-        if (event.indexed_type === '0x1::multisig_account::Vote') {
-          discoveredAccounts[event.data.multisig_account] = {
+        if (
+          activity.event_type ===
+            `${LONG_FRAMEWORK_ADDRESS}::multisig_account::Vote` ||
+          activity.event_type ===
+            `${LONG_FRAMEWORK_ADDRESS}::multisig_account::VoteEvent`
+        ) {
+          discoveredAccounts[normalizeAddress(activity.multisig_account)] = {
             hasVoted: true
           };
         }

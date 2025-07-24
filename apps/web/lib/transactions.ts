@@ -1,6 +1,10 @@
 import { UseQueryResult } from '@tanstack/react-query';
 
-import { UserTransactionResponse } from '@aptos-labs/ts-sdk';
+import {
+  UserTransactionResponse,
+  WriteSetChange,
+  WriteSetChangeWriteResource
+} from '@aptos-labs/ts-sdk';
 
 export function getSimulationQueryErrors(
   result: UseQueryResult<UserTransactionResponse, Error>
@@ -18,4 +22,10 @@ export const explainError = (error?: string) => {
     return 'The account must have some APT to create a proposal. Please add some APT to the Vault and try again.';
   }
   return error;
+};
+
+export const isWriteSetChangeWriteResource = (
+  change: WriteSetChange
+): change is WriteSetChangeWriteResource => {
+  return change.type === 'write_resource';
 };

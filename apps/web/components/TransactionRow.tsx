@@ -22,6 +22,7 @@ import { useMemo } from 'react';
 import { getExplorerUrl } from '@aptos-labs/js-pro';
 import { AptosAvatar } from 'aptos-avatars-react';
 import AddressDisplay from './AddressDisplay';
+import { deserializeMultisigTransactionPayload } from '@/lib/payloads';
 
 interface TransactionRowProps {
   transaction: UserTransactionResponse;
@@ -34,7 +35,9 @@ export default function TransactionRow({
   network,
   executionEvent
 }: TransactionRowProps) {
-  let transactionPayload: EntryFunctionPayloadResponse | undefined;
+  let transactionPayload:
+    | Pick<EntryFunctionPayloadResponse, 'function'>
+    | undefined;
 
   if (transaction.payload.type === 'entry_function_payload') {
     transactionPayload = transaction.payload as EntryFunctionPayloadResponse;
@@ -43,6 +46,12 @@ export default function TransactionRow({
   if (transaction.payload.type === 'multisig_payload') {
     transactionPayload = (transaction.payload as MultisigPayloadResponse)
       .transaction_payload;
+  }
+
+  if (!transactionPayload && executionEvent?.payload) {
+    transactionPayload = deserializeMultisigTransactionPayload(
+      executionEvent.payload
+    ) as Pick<EntryFunctionPayloadResponse, 'function'>;
   }
 
   const statusTextColor = useMemo(() => {

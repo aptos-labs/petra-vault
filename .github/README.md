@@ -96,6 +96,10 @@ Runtime versions are defined in the [`.tool-versions`](../.tool-versions) file. 
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
+### No-Code Indexer
+
+Petra Vault uses the No-Code Indexing (NCI) service from [Aptos Build](https://build.aptoslabs.com) in order to index multisig transactions and ownership discovery. In order to run the indexer, please follow the instructions in the [indexer README](../indexer/README.md).
+
 ### Environment Variables
 
 Create a `.env.local` file in the `apps/web` directory by copying the example file:

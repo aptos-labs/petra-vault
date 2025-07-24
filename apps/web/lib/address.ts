@@ -26,3 +26,7 @@ export function isApt(address: string) {
       AccountAddress.from(address).equals(AccountAddress.from('0xa')))
   );
 }
+
+export function normalizeAddress(address: string) {
+  return AccountAddress.from(address).toString().toLowerCase();
+}

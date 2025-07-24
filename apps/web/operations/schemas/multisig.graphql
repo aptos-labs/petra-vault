@@ -1,0 +1,44 @@
+query getMultisigTransactions(
+  $multisigAccount: String!
+  $where: multisig_transactions_bool_exp!
+  $orderBy: [multisig_transactions_order_by!]
+  $limit: Int
+  $offset: Int
+) {
+  multisig_transactions(
+    where: { _and: [{ multisig_account: { _eq: $multisigAccount } }, $where] }
+    order_by: $orderBy
+    limit: $limit
+    offset: $offset
+  ) {
+    event_type
+    executor
+    multisig_account
+    num_approvals
+    num_rejections
+    sequence_number
+    transaction_payload
+    version
+  }
+}
+
+query getMultisigOwnerActivities(
+  $where: multisig_owner_activities_bool_exp
+  $orderBy: [multisig_owner_activities_order_by!]
+  $limit: Int
+  $offset: Int
+) {
+  multisig_owner_activities(
+    where: $where
+    order_by: $orderBy
+    limit: $limit
+    offset: $offset
+  ) {
+    event_type
+    multisig_account
+    owner_vote
+    owners_added
+    owners_removed
+    version
+  }
+}

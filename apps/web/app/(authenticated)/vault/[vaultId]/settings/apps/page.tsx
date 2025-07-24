@@ -21,6 +21,7 @@ import { Trash2, Globe, Shield, Clock } from 'lucide-react';
 import { useAppSettings } from '@/context/useAppSettings';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -141,7 +142,9 @@ export default function AppsSettingsPage() {
                 </DialogHeader>
                 <br />
                 <DialogFooter>
-                  <Button variant="outline">Cancel</Button>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
                   <Button onClick={handleClearAll}>Clear All Settings</Button>
                 </DialogFooter>
               </DialogContent>
@@ -201,7 +204,9 @@ export default function AppsSettingsPage() {
                           </DialogHeader>
                           <br />
                           <DialogFooter>
-                            <Button variant="outline">Cancel</Button>
+                            <DialogClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DialogClose>
                             <Button onClick={() => handleClearDomain(domain)}>
                               Clear Settings
                             </Button>

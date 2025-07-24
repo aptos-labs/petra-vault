@@ -13,7 +13,6 @@ import { ExternalLinkIcon } from 'lucide-react';
 import { truncateAddress } from '@aptos-labs/wallet-adapter-react';
 import { useOnboarding } from '@/context/OnboardingProvider';
 import ExpandingContainer from './ExpandingContainer';
-import { hasWindow } from '@/lib/utils';
 import { LoadingSpinner } from './LoaderSpinner';
 import { useMutation } from '@tanstack/react-query';
 import { ModuleViewReturnType } from '@/lib/types/modules';
@@ -176,7 +175,7 @@ export default function OnboardingAddOrImport() {
             </div>
 
             <ExpandingContainer debounce={100}>
-              {isLoadingDiscoveredAccounts || !hasWindow() ? (
+              {isLoadingDiscoveredAccounts || !account ? (
                 <div
                   key="is-loading-discovered-accounts"
                   className="flex flex-col items-center gap-2"

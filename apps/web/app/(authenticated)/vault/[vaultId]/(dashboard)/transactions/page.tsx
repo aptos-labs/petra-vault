@@ -8,12 +8,14 @@ import { useActiveVault } from '@/context/ActiveVaultProvider';
 import useMultisigExecutionEvents, {
   ExecutionEvent
 } from '@/hooks/useMultisigExecutionEvents';
-import { hasWindow } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { useMemo } from 'react';
 import { Network } from '@aptos-labs/ts-sdk';
+import { useAccount } from '@aptos-labs/react';
 
 export default function VaultTransactionsPage() {
+  const account = useAccount();
+
   const { vaultAddress, network, isOwner } = useActiveVault();
   const {
     data: executionEvents,
@@ -74,7 +76,7 @@ export default function VaultTransactionsPage() {
       <br />
 
       <AnimatePresence initial={false} mode="wait">
-        {isLoading || !hasWindow() ? (
+        {isLoading || !account ? (
           <motion.div
             key="skeleton-loader"
             className="flex flex-col gap-4"

@@ -1,4 +1,5 @@
-import { NetworkInfo } from '@aptos-labs/js-pro';
+import { getMultisigIndexerClient } from '@/operations';
+import { NetworkInfo, Order_By } from '@aptos-labs/js-pro';
 import { useClients } from '@aptos-labs/react';
 import {
   AccountAddress,
@@ -13,6 +14,7 @@ import {
   useInfiniteQuery,
   UseInfiniteQueryOptions
 } from '@tanstack/react-query';
+import { LONG_FRAMEWORK_ADDRESS } from '@/lib/constants';
 
 export interface ExecutionEvent {
   type: 'success' | 'failed' | 'rejected';
@@ -62,111 +64,88 @@ export default function useMultisigExecutionEvents({
     queryKey: ['multisig-execution-events', address, network],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
-      const events = await aptos.getEvents({
-        options: {
-          orderBy: [{ transaction_version: 'desc' }],
-          offset: pageParam,
-          limit: 100,
-          where: {
-            _or: [
-              {
-                indexed_type: {
-                  _in: [
-                    '0x1::multisig_account::TransactionExecutionSucceeded',
-                    '0x1::multisig_account::TransactionExecutionFailed',
-                    '0x1::multisig_account::ExecuteRejectedTransaction'
-                  ]
-                },
-                data: { _contains: { multisig_account: address } }
-              },
-              {
-                indexed_type: {
-                  _in: [
-                    '0x1::multisig_account::TransactionExecutionSucceededEvent',
-                    '0x1::multisig_account::TransactionExecutionFailedEvent',
-                    '0x1::multisig_account::ExecuteRejectedTransactionEvent'
-                  ]
-                },
-                account_address: { _eq: address }
-              }
-            ]
-          }
-        }
-      });
+      const multisigIndexerClient = getMultisigIndexerClient(
+        network?.network ?? aptos.config.network
+      );
 
-      const transactions = await Promise.all(
-        events.map((event) =>
+      if (!multisigIndexerClient) {
+        console.error(
+          `Multisig indexer client is unavailable for this network: ${network}.`
+        );
+        return [];
+      }
+
+      const { multisig_transactions: multisigTransactions } =
+        await multisigIndexerClient.getMultisigTransactions({
+          multisigAccount: address,
+          where: {},
+          orderBy: [{ version: Order_By.Desc }],
+          offset: pageParam
+        });
+
+      const userTransactions = await Promise.all(
+        multisigTransactions.map((e) =>
           client.fetchTransaction({
-            ledgerVersion: event.transaction_version,
+            ledgerVersion: e.version,
             network
           })
         )
       );
 
-      return events.reduce((acc, event) => {
-        const transaction = transactions.find(
+      return multisigTransactions.reduce((acc, multisigTransaction) => {
+        const userTransaction = userTransactions.find(
           (t) =>
             t.type === TransactionResponseType.User &&
-            t.version === event.transaction_version.toString()
+            t.version === multisigTransaction.version
         );
 
-        if (!transaction || transaction.type !== TransactionResponseType.User) {
+        if (
+          !userTransaction ||
+          userTransaction.type !== TransactionResponseType.User
+        ) {
           return acc;
         }
 
         // Normalize the sender address to fix zero prefixed addresses
-        transaction.sender = AccountAddress.from(transaction.sender).toString();
+        userTransaction.sender = AccountAddress.from(
+          userTransaction.sender
+        ).toString();
 
-        if (
-          event.indexed_type ===
-            '0x1::multisig_account::TransactionExecutionSucceeded' ||
-          event.indexed_type ===
-            '0x1::multisig_account::TransactionExecutionSucceededEvent'
-        ) {
-          acc.push({
-            type: 'success',
-            version: event.transaction_version,
-            payload: event.data.transaction_payload,
-            approvals: Number(event.data.num_approvals),
-            executor: AccountAddress.from(event.data.executor),
-            sequenceNumber: Number(event.data.sequence_number),
-            transaction
-          });
+        let status: 'success' | 'failed' | 'rejected';
+        switch (multisigTransaction.event_type) {
+          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::TransactionExecutionSucceeded`:
+          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::TransactionExecutionSucceededEvent`:
+            status = 'success';
+            break;
+          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::TransactionExecutionFailed`:
+          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::TransactionExecutionFailedEvent`:
+            status = 'failed';
+            break;
+          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::ExecuteRejectedTransaction`:
+          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::ExecuteRejectedTransactionEvent`:
+            status = 'rejected';
+            break;
+          default:
+            console.error(
+              `Unknown event type: ${multisigTransaction.event_type}`
+            );
+            return acc;
         }
 
-        if (
-          event.indexed_type ===
-            '0x1::multisig_account::TransactionExecutionFailed' ||
-          event.indexed_type ===
-            '0x1::multisig_account::TransactionExecutionFailedEvent'
-        ) {
-          acc.push({
-            type: 'failed',
-            version: event.transaction_version,
-            payload: event.data.transaction_payload,
-            approvals: Number(event.data.num_approvals),
-            executor: AccountAddress.from(event.data.executor),
-            sequenceNumber: Number(event.data.sequence_number),
-            transaction
-          });
-        }
-
-        if (
-          event.indexed_type ===
-            '0x1::multisig_account::ExecuteRejectedTransaction' ||
-          event.indexed_type ===
-            '0x1::multisig_account::ExecuteRejectedTransactionEvent'
-        ) {
-          acc.push({
-            type: 'rejected',
-            version: event.transaction_version,
-            payload: event.data.transaction_payload,
-            rejections: Number(event.data.num_rejections),
-            executor: AccountAddress.from(event.data.executor),
-            sequenceNumber: Number(event.data.sequence_number),
-            transaction
-          });
-        }
+        acc.push({
+          type: status,
+          version: multisigTransaction.version,
+          payload: multisigTransaction.transaction_payload ?? undefined,
+          approvals: multisigTransaction.num_approvals
+            ? Number(multisigTransaction.num_approvals)
+            : undefined,
+          rejections: multisigTransaction.num_rejections
+            ? Number(multisigTransaction.num_rejections)
+            : undefined,
+          executor: AccountAddress.from(multisigTransaction.executor),
+          sequenceNumber: Number(multisigTransaction.sequence_number),
+          transaction: userTransaction
+        });
 
         return acc;
       }, [] as ExecutionEvent[]);

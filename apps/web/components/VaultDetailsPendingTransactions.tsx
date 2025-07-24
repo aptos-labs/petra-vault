@@ -15,7 +15,6 @@ import useMultisigSequenceNumber from '@/hooks/useMultisigSequenceNumber';
 import { useResourceType } from '@aptos-labs/react';
 import { useActiveVault } from '@/context/ActiveVaultProvider';
 import { PendingTransactionRow } from './PendingTransactionRow';
-import { hasWindow } from '@/lib/utils';
 import { AnimatePresence, motion } from 'motion/react';
 
 export default function VaultDetailsPendingTransactions() {
@@ -41,8 +40,7 @@ export default function VaultDetailsPendingTransactions() {
       network: { network }
     });
 
-  const isLoading =
-    isPendingTransactionsLoading || isSequenceNumberLoading || !hasWindow();
+  const isLoading = isPendingTransactionsLoading || isSequenceNumberLoading;
 
   const isEmpty =
     !pendingTransactions?.[0] ||

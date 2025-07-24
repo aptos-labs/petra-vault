@@ -1,0 +1,409 @@
+spec_identifier:
+  spec_creator: shepherd@aptoslabs.com
+  spec_name: remapping-processor
+  spec_version: 0.0.10
+common_config:
+  network: testnet
+  starting_version: 4500665800
+  starting_version_override: null
+custom_config:
+  transaction_metadata:
+    timestamp: []
+    version:
+      - table: multisig_transactions
+        column: version
+      - table: multisig_owner_activities
+        column: version
+    epoch: []
+    block_height: []
+  events:
+    0x1::multisig_account::AddOwners:
+      event_fields:
+        $.multisig_account:
+          - table: multisig_owner_activities
+            column: multisig_account
+        $.owners_added:
+          - table: multisig_owner_activities
+            column: owners_added
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address: []
+        event_type:
+          - table: multisig_owner_activities
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::AddOwnersEvent:
+      event_fields:
+        $.owners_added:
+          - table: multisig_owner_activities
+            column: owners_added
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_owner_activities
+            column: multisig_account
+        event_type:
+          - table: multisig_owner_activities
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::ExecuteRejectedTransaction:
+      event_fields:
+        $.executor:
+          - table: multisig_transactions
+            column: executor
+        $.multisig_account:
+          - table: multisig_transactions
+            column: multisig_account
+        $.num_rejections:
+          - table: multisig_transactions
+            column: num_rejections
+        $.sequence_number:
+          - table: multisig_transactions
+            column: sequence_number
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address: []
+        event_type:
+          - table: multisig_transactions
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::ExecuteRejectedTransactionEvent:
+      event_fields:
+        $.executor:
+          - table: multisig_transactions
+            column: executor
+        $.num_rejections:
+          - table: multisig_transactions
+            column: num_rejections
+        $.sequence_number:
+          - table: multisig_transactions
+            column: sequence_number
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_transactions
+            column: multisig_account
+        event_type:
+          - table: multisig_transactions
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::RemoveOwners:
+      event_fields:
+        $.multisig_account:
+          - table: multisig_owner_activities
+            column: multisig_account
+        $.owners_removed:
+          - table: multisig_owner_activities
+            column: owners_removed
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address: []
+        event_type:
+          - table: multisig_owner_activities
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::RemoveOwnersEvent:
+      event_fields:
+        $.owners_removed:
+          - table: multisig_owner_activities
+            column: owners_removed
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_owner_activities
+            column: multisig_account
+        event_type:
+          - table: multisig_owner_activities
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::TransactionExecutionFailed:
+      event_fields:
+        $.executor:
+          - table: multisig_transactions
+            column: executor
+        $.multisig_account:
+          - table: multisig_transactions
+            column: multisig_account
+        $.num_approvals:
+          - table: multisig_transactions
+            column: num_approvals
+        $.sequence_number:
+          - table: multisig_transactions
+            column: sequence_number
+        $.transaction_payload:
+          - table: multisig_transactions
+            column: transaction_payload
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address: []
+        event_type:
+          - table: multisig_transactions
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::TransactionExecutionFailedEvent:
+      event_fields:
+        $.executor:
+          - table: multisig_transactions
+            column: executor
+        $.num_approvals:
+          - table: multisig_transactions
+            column: num_approvals
+        $.sequence_number:
+          - table: multisig_transactions
+            column: sequence_number
+        $.transaction_payload:
+          - table: multisig_transactions
+            column: transaction_payload
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_transactions
+            column: multisig_account
+        event_type:
+          - table: multisig_transactions
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::TransactionExecutionSucceeded:
+      event_fields:
+        $.executor:
+          - table: multisig_transactions
+            column: executor
+        $.multisig_account:
+          - table: multisig_transactions
+            column: multisig_account
+        $.num_approvals:
+          - table: multisig_transactions
+            column: num_approvals
+        $.sequence_number:
+          - table: multisig_transactions
+            column: sequence_number
+        $.transaction_payload:
+          - table: multisig_transactions
+            column: transaction_payload
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address: []
+        event_type:
+          - table: multisig_transactions
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::TransactionExecutionSucceededEvent:
+      event_fields:
+        $.executor:
+          - table: multisig_transactions
+            column: executor
+        $.num_approvals:
+          - table: multisig_transactions
+            column: num_approvals
+        $.sequence_number:
+          - table: multisig_transactions
+            column: sequence_number
+        $.transaction_payload:
+          - table: multisig_transactions
+            column: transaction_payload
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_transactions
+            column: multisig_account
+        event_type:
+          - table: multisig_transactions
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::Vote:
+      event_fields:
+        $.multisig_account:
+          - table: multisig_owner_activities
+            column: multisig_account
+        $.owner:
+          - table: multisig_owner_activities
+            column: owner_vote
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address: []
+        event_type:
+          - table: multisig_owner_activities
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::VoteEvent:
+      event_fields:
+        $.owner:
+          - table: multisig_owner_activities
+            column: owner_vote
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_owner_activities
+            column: multisig_account
+        event_type:
+          - table: multisig_owner_activities
+            column: event_type
+        event_index: []
+      constant_values: []
+  payload: {}
+  db_schema:
+    multisig_transactions:
+      version:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: transaction_metadata
+          column_type: version
+      executor:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: address
+      multisig_account:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: true
+        is_vec: false
+        default_value: null
+        column_type:
+          type: event_metadata
+          column_type: account_address
+      num_rejections:
+        is_index: false
+        is_nullable: true
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: u64
+      sequence_number:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: true
+        is_vec: false
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: u64
+      event_type:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: event_metadata
+          column_type: event_type
+      num_approvals:
+        is_index: false
+        is_nullable: true
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: u64
+      transaction_payload:
+        is_index: false
+        is_nullable: true
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: string
+    multisig_owner_activities:
+      version:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: true
+        is_vec: false
+        default_value: null
+        column_type:
+          type: transaction_metadata
+          column_type: version
+      multisig_account:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: true
+        is_vec: false
+        default_value: null
+        column_type:
+          type: event_metadata
+          column_type: account_address
+      owners_added:
+        is_index: false
+        is_nullable: true
+        is_option: false
+        is_primary_key: false
+        is_vec: true
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: address
+      event_type:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: event_metadata
+          column_type: event_type
+      owners_removed:
+        is_index: false
+        is_nullable: true
+        is_option: false
+        is_primary_key: false
+        is_vec: true
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: address
+      owner_vote:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: address

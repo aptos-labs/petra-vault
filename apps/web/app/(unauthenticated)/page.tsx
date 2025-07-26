@@ -2,22 +2,12 @@ import { Metadata } from 'next';
 import Login from '@/components/Login';
 import Link from 'next/link';
 import HackenBadge from '@/components/HackenBadge';
+import Image from 'next/image';
 
 export const metadata: Metadata = {
   title: 'Login to Petra Vault',
   description:
     'Securely access your Petra Vault multisig wallet on the Aptos Network. Connect your wallet to manage shared crypto assets and proposals.',
-  openGraph: {
-    title: 'Login to Petra Vault',
-    description:
-      'Securely access your Petra Vault multisig wallet on the Aptos Network.',
-    url: 'https://vault.petra.app'
-  },
-  twitter: {
-    title: 'Login to Petra Vault',
-    description:
-      'Securely access your Petra Vault multisig wallet on the Aptos Network.'
-  },
   alternates: {
     canonical: 'https://vault.petra.app'
   }
@@ -32,8 +22,16 @@ export default function LoginPage() {
             href="/"
             className="flex items-center justify-center font-medium whitespace-pre"
           >
-            <img src="/petra_logo.png" alt="Petra Logo" className="w-4 mr-2" />
-            <h1>Petra Vault</h1>
+            <Image
+              src="/petra_logo.svg"
+              alt="Petra Logo"
+              className="w-5 mr-2 text-black"
+              width={20}
+              height={20}
+            />
+            <span className="leading-none text-lg translate-y-0.25">
+              Petra Vault
+            </span>
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -46,10 +44,11 @@ export default function LoginPage() {
         </div>
       </div>
       <div className="relative hidden bg-muted lg:block">
+        <div className="absolute inset-0 bg-primary" />
         <img
           src="/login_asset.jpeg"
           alt="Landscape"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+          className="absolute inset-0 h-full w-full object-cover opacity-70"
         />
       </div>
     </div>

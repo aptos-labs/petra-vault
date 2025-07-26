@@ -4,6 +4,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+  font-family: 'FKGrotesk';
+  src: url('../public/fonts/FKGrotesk.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(27.81% 0.0296 256.85);
@@ -11,15 +19,15 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(69.49% 0.1953 23.69);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
+  --primary: oklch(0.5338 0.2645 278.89);
+  --primary-foreground: oklch(0.9761 0 0);
+  --secondary: oklch(0.9551 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
   --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
+  --destructive: oklch(0.7003 0.1838 22.33);
   --destructive-foreground: oklch(0.577 0.245 27.325);
   --border: oklch(92.74% 0.0027 106.45);
   --input: oklch(0.922 0 0);
@@ -122,7 +130,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-display: "Work Sans", "sans-serif";
+  --font-display: "FKGrotesk", "sans-serif";
 
   /* Custom Theme */
   --color-border-dark: var(--border-dark);
@@ -130,7 +138,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/50 font-display;
   }
   body {
     @apply bg-background text-foreground;

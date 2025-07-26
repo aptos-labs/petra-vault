@@ -74,7 +74,7 @@ export default function ReceiveModal() {
         </div>
 
         <motion.div
-          className="relative flex items-center justify-center p-4 w-fit mx-auto rounded-lg border"
+          className="relative flex items-center justify-center p-4 w-fit mx-auto rounded-sm border"
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{

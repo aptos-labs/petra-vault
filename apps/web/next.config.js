@@ -30,16 +30,7 @@ const nextConfig = {
         ]
       },
       {
-        source: '/petra_logo.png',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      },
-      {
-        source: '/og_image.jpeg',
+        source: '/petra_logo.svg',
         headers: [
           {
             key: 'Cache-Control',

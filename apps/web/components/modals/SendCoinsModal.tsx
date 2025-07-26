@@ -494,7 +494,7 @@ export default function SendCoinsModal({ onClose }: SendCoinsModalProps) {
                     <li key={c.balance.assetType} className="list-none w-full">
                       <button
                         type="button"
-                        className="border w-full px-4 py-2 rounded-md hover:bg-secondary cursor-pointer"
+                        className="w-full px-4 py-2 rounded-md bg-secondary/70 hover:bg-secondary cursor-pointer transition-colors"
                         onClick={() => {
                           setSelectedCoin(c);
                           setSearch('');

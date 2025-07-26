@@ -21,7 +21,6 @@ export const metadata: Metadata = {
     title: 'Petra Vault',
     description:
       'Secure, non-custodial multisig wallet solution on the Aptos Network. Create shared wallets, manage crypto assets with multiple signatures.',
-    images: [{ url: '/og_image.jpeg', width: 1200, height: 630 }],
     url: 'https://vault.petra.app',
     type: 'website',
     siteName: 'Petra Vault'
@@ -44,7 +43,6 @@ export const metadata: Metadata = {
     title: 'Petra Vault',
     description:
       'Secure, non-custodial multisig wallet solution on the Aptos Network. Create shared wallets, manage crypto assets with multiple signatures.',
-    images: [{ url: '/og_image.jpeg', width: 1200, height: 630 }],
     site: '@PetraWallet',
     creator: '@PetraWallet'
   },

@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { useSidebar } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/useMobile';
+import Image from 'next/image';
 
 export function SiteHeader() {
   const isMobile = useIsMobile();
@@ -31,11 +32,19 @@ export function SiteHeader() {
 
         <Link
           href="/home"
-          className="flex items-center gap-3 font-semibold font-display tracking-wide"
+          className="flex items-center font-semibold font-display tracking-wide"
           data-testid="site-header-logo"
         >
-          <img src="/petra_logo.png" alt="Petra Vault" className="w-4" />
-          Petra Vault
+          <Image
+            src="/petra_logo.svg"
+            alt="Petra Vault"
+            className="w-5 text-black mr-2"
+            width={20}
+            height={20}
+          />
+          <span className="leading-none text-lg translate-y-0.25">
+            Petra Vault
+          </span>
         </Link>
       </div>
     </header>

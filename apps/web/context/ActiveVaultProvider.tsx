@@ -26,8 +26,10 @@ export const [ActiveVaultProvider, useActiveVault] = constate(
       network: { network }
     });
 
-    const isOwner = owners.data?.some((owner) =>
-      account?.address.equals(AccountAddress.from(owner))
+    const isOwner = owners.data?.some(
+      (owner) =>
+        account &&
+        AccountAddress.from(account.address).equals(AccountAddress.from(owner))
     );
 
     return {

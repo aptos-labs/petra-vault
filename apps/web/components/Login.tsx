@@ -77,7 +77,7 @@ export default function Login({
             key="what-is-a-vault"
             className="flex flex-col items-center gap-4"
           >
-            <img src="/onboarding_1.png" alt="Petra Vault" className="w-52" />
+            <img src="/onboarding_1.png" alt="Petra Vault" className="w-72" />
             <div className="text-center grid gap-2 max-w-xs">
               <h2 className="text-2xl font-bold">What is a Vault?</h2>
               <p className="text-balance text-sm text-muted-foreground text-center">
@@ -90,7 +90,7 @@ export default function Login({
             key="why-use-a-vault"
             className="flex flex-col items-center gap-4"
           >
-            <img src="/onboarding_2.png" alt="Petra Vault" className="w-52" />
+            <img src="/onboarding_2.png" alt="Petra Vault" className="w-72" />
             <div className="text-center grid gap-2 max-w-xs">
               <h2 className="text-2xl font-bold">Why use a Vault?</h2>
               <p className="text-balance text-sm text-muted-foreground text-center">
@@ -103,7 +103,7 @@ export default function Login({
             key="is-a-vault-transparent"
             className="flex flex-col items-center gap-4"
           >
-            <img src="/onboarding_3.png" alt="Petra Vault" className="w-52" />
+            <img src="/onboarding_3.png" alt="Petra Vault" className="w-72" />
             <div className="text-center grid gap-2 max-w-xs">
               <h2 className="text-2xl font-bold">Is a Vault transparent?</h2>
               <p className="text-balance text-sm text-muted-foreground text-center">
@@ -124,7 +124,7 @@ export default function Login({
             <div
               className={cn(
                 'w-3 h-3 md:w-2 md:h-2 rounded-full transition-all',
-                current === index + 1 ? 'bg-primary' : 'bg-muted'
+                current === index + 1 ? 'bg-primary' : 'bg-secondary'
               )}
             />
           </button>
@@ -133,7 +133,7 @@ export default function Login({
 
       <br className="hidden md:block" />
 
-      <div className="flex flex-col items-center gap-4 text-center border p-8 rounded-md max-w-xs">
+      <div className="flex flex-col items-center gap-4 text-center border p-8 rounded-sm max-w-xs">
         <div>
           <h2 className="text-xl font-bold">Get Started</h2>
           <p className="text-balance text-sm text-muted-foreground">

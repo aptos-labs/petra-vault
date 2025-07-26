@@ -3,10 +3,10 @@
 import { useCoins } from '@/context/CoinsProvider';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMemo } from 'react';
-import { parseUnits } from '@aptos-labs/js-pro';
 import { Skeleton } from '@/components/ui/skeleton';
 import CoinAvatar from '@/components/CoinAvatar';
 import TokenPriceChart from '@/components/TokenPriceChart';
+import { formatUnits } from '@aptos-labs/js-pro';
 
 export default function VaultPage() {
   const { coins } = useCoins();
@@ -15,18 +15,20 @@ export default function VaultPage() {
     if (!coins) return undefined;
 
     return [...coins].sort((a, b) => {
-      let aValue: bigint = BigInt(0);
-      let bValue: bigint = BigInt(0);
+      let aValue: number = 0;
+      let bValue: number = 0;
 
       aValue = a.price?.usd
-        ? parseUnits(a.balance.amount.toString(), a.balance.metadata.decimals) *
-          parseUnits(a.price.usd.toFixed(20), 2)
-        : 0n;
+        ? Number(
+            formatUnits(BigInt(a.balance.amount), a.balance.metadata.decimals)
+          ) * a.price.usd
+        : 0;
 
       bValue = b.price?.usd
-        ? parseUnits(b.balance.amount.toString(), b.balance.metadata.decimals) *
-          parseUnits(b.price.usd.toFixed(20), 2)
-        : 0n;
+        ? Number(
+            formatUnits(BigInt(b.balance.amount), b.balance.metadata.decimals)
+          ) * b.price.usd
+        : 0;
 
       return Number(bValue - aValue);
     });
@@ -67,7 +69,7 @@ export default function VaultPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="text-center py-16 font-display text-muted-foreground bg-secondary border border-dashed rounded-lg"
+            className="text-center py-16 font-display text-muted-foreground bg-secondary rounded-sm"
           >
             No coins found in this vault
           </motion.div>
@@ -106,7 +108,7 @@ export default function VaultPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-center gap-2 md:gap-4 p-4 rounded-lg border hover:bg-accent/50 transition-colors"
+                  className="flex items-center gap-2 md:gap-4 p-4 rounded-lg bg-secondary/70 transition-colors"
                 >
                   <CoinAvatar coin={coin} size="lg" />
 

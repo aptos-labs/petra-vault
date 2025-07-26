@@ -106,14 +106,14 @@ export default function VaultTransactionsPage() {
             ))}
           </motion.div>
         ) : network === Network.DEVNET ? (
-          <div className="text-center py-16 font-display text-muted-foreground bg-secondary border border-dashed rounded-lg">
+          <div className="text-center py-16 font-display text-muted-foreground bg-secondary rounded-sm">
             Historical transactions are not available on Devnet.
           </div>
         ) : groupedTransactions &&
           Object.entries(groupedTransactions).length === 0 ? (
           <motion.div
             key="no-transactions"
-            className="text-center py-16 font-display text-muted-foreground bg-secondary border border-dashed rounded-lg"
+            className="text-center py-16 font-display text-muted-foreground bg-secondary rounded-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}

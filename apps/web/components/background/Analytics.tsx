@@ -1,6 +1,7 @@
 'use client';
 
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { AccountAddress } from '@aptos-labs/ts-sdk';
 import { useEffect } from 'react';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { useParams } from 'next/navigation';
@@ -17,14 +18,20 @@ export default function Analytics() {
       : null;
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_GA4_ID && connected && account) {
-      window.gtag('set', 'user_id', account.address.toStringWithoutPrefix());
+    if (
+      process.env.NEXT_PUBLIC_GA4_ID &&
+      connected &&
+      account &&
+      account.address instanceof AccountAddress
+    ) {
+      const accountAddress = AccountAddress.from(account.address);
+      window.gtag('set', 'user_id', accountAddress.toStringWithoutPrefix());
       window.gtag('set', 'user_properties', {
         ...(parsedVaultId && {
           vault_address: parsedVaultId.address.toStringWithoutPrefix(),
           vault_network: parsedVaultId.network
         }),
-        account_address: account.address.toStringWithoutPrefix(),
+        account_address: accountAddress.toStringWithoutPrefix(),
         account_network: network?.name
       });
     }

@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://vault.petra.app">
-    <img alt="petra logo" src="./petra_logo.svg" width="auto" height="60">
+    <img alt="petra logo" src="./petra_app_logo.svg" width="auto" height="60">
   </a>
 </p>
 

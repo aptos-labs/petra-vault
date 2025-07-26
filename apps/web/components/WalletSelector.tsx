@@ -127,7 +127,7 @@ function ConnectWalletDialog({
   const hasAptosConnectWallets = !!aptosConnectWallets.length;
 
   return (
-    <DialogContent className="max-h-screen overflow-auto">
+    <DialogContent className="max-h-screen overflow-auto max-w-sm!">
       <AboutAptosConnect renderEducationScreen={renderEducationScreen}>
         <DialogHeader>
           <DialogTitle className="flex flex-col text-center leading-snug">
@@ -241,7 +241,7 @@ function WalletRow({ wallet, onConnect }: WalletRowProps) {
     <WalletItem
       wallet={wallet}
       onConnect={onConnect}
-      className="flex items-center justify-between px-4 py-3 gap-4 border rounded-md"
+      className="flex items-center justify-between px-4 py-3 gap-4 border rounded-sm"
     >
       <div className="flex items-center gap-4">
         <WalletItem.Icon className="h-6 w-6" />
@@ -255,6 +255,7 @@ function WalletRow({ wallet, onConnect }: WalletRowProps) {
         <WalletItem.ConnectButton asChild>
           <Button
             size="sm"
+            variant="secondary"
             data-testid={`connect-wallet-button-${wallet.name.toLowerCase()}`}
           >
             Connect
@@ -269,7 +270,7 @@ function AptosConnectWalletRow({ wallet, onConnect }: WalletRowProps) {
   return (
     <WalletItem wallet={wallet} onConnect={onConnect}>
       <WalletItem.ConnectButton asChild>
-        <Button size="lg" variant="outline" className="w-full gap-4">
+        <Button size="lg" variant="secondary" className="w-full gap-4">
           <WalletItem.Icon className="h-5 w-5" />
           <WalletItem.Name className="text-base font-normal" />
         </Button>

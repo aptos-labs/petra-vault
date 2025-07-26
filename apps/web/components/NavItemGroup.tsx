@@ -50,7 +50,7 @@ export function NavItemGroup({
               {isActive && (
                 <motion.div
                   layoutId="active-nav-item"
-                  className="absolute left-0 right-0 top-0 bottom-0 inset-0 bg-accent/80 z-0 rounded-md border"
+                  className="absolute left-0 right-0 top-0 bottom-0 inset-0 bg-secondary z-0 rounded-sm "
                   transition={{
                     duration: 0.05,
                     type: 'spring',

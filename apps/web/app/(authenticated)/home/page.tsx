@@ -90,11 +90,7 @@ export default function Home() {
               delay: vaults.length * 0.1
             }}
           >
-            <Button
-              asChild
-              variant="secondary"
-              data-testid="authenticated-create-vault-button"
-            >
+            <Button asChild data-testid="authenticated-create-vault-button">
               <Link href="/onboarding" className="w-full">
                 Create Vault
               </Link>

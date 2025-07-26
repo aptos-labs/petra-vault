@@ -20,7 +20,7 @@ export default function VaultRow({ vault }: { vault: Vault }) {
       href={`/vault/${createVaultId(vault)}`}
       data-testid={`vault-row-${vault.address.toString()}`}
     >
-      <motion.div className="flex items-center border rounded-md p-2 gap-2 hover:bg-secondary transition-colors cursor-pointer">
+      <motion.div className="flex items-center bg-secondary/70 rounded-md hover p-2 gap-2 hover:bg-secondary transition-colors cursor-pointer">
         <AptosAvatar value={vault.address.toString()} size={32} />
         <div className="flex flex-col">
           <div className="flex items-start gap-1">

@@ -131,7 +131,11 @@ export default function VaultExplorePage() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-8">
-          <img src="/petra_logo.png" alt="Petra Logo" className="w-12 mr-2" />
+          <img
+            src="/petra_logo.svg"
+            alt="Petra Logo"
+            className="w-12 mr-2 text-black"
+          />
           <p className="font-display text-center">
             This feature is only available on Desktop.
           </p>
@@ -144,7 +148,11 @@ export default function VaultExplorePage() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-8">
-          <img src="/petra_logo.png" alt="Petra Logo" className="w-12 mr-2" />
+          <img
+            src="/petra_logo.svg"
+            alt="Petra Logo"
+            className="w-12 mr-2 text-black"
+          />
           <p className="font-display text-center">
             The <b>Petra Wallet extension</b> is required to use this feature.
             Please install it and refresh the page to continue.

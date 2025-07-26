@@ -5,17 +5,20 @@ import { PlusIcon, Cross1Icon } from '@radix-ui/react-icons';
 import { cn } from '@/lib/utils';
 import MoveOptionSwitch from './MoveOptionSwitch';
 import { MOVE_OPTION_NONE } from '@/lib/abis';
+import { TypeTagVector } from '@aptos-labs/ts-sdk';
 
 export type FormArrayInputValue = string | FormArrayInputValue[];
 
 interface ArrayInputProps {
   value?: FormArrayInputValue[];
+  argTypeTag?: TypeTagVector;
   onChange: (value: FormArrayInputValue[]) => void;
   currentDepth?: number;
   maximumDepth?: number;
 }
 
 export default function FormArrayInput({
+  argTypeTag,
   value,
   onChange,
   currentDepth = 0,
@@ -86,12 +89,15 @@ export default function FormArrayInput({
                   }
                   className="flex-1 w-full"
                 />
-                <MoveOptionSwitch
-                  onCheckedChange={(checked) => {
-                    const value = checked ? MOVE_OPTION_NONE : '';
-                    handleChange(index, value);
-                  }}
-                />
+                {argTypeTag?.value.isStruct() &&
+                  argTypeTag.value.isOption() && (
+                    <MoveOptionSwitch
+                      onCheckedChange={(checked) => {
+                        const value = checked ? MOVE_OPTION_NONE : '';
+                        handleChange(index, value);
+                      }}
+                    />
+                  )}
               </div>
             )}
             <Button

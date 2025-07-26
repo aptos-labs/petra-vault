@@ -81,7 +81,7 @@ export default function VaultLayout({ children }: PropsWithChildren) {
           >
             <Button
               size="lg"
-              className="px-6 flex-1 md:flex-none"
+              className="px-6 flex-1 md:flex-none rounded-md"
               onClick={() => {
                 trackEvent('send_coins_review_draft', {});
                 setIsSendCoinsModalOpen(true);
@@ -97,7 +97,7 @@ export default function VaultLayout({ children }: PropsWithChildren) {
             <DialogTrigger asChild>
               <Button
                 size="lg"
-                className="px-6 flex-1 md:flex-none"
+                className="px-6 flex-1 md:flex-none rounded-md"
                 variant="outline"
               >
                 Receive <ArrowDownRightIcon className="w-6 h-6" />

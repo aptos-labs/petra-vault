@@ -38,7 +38,10 @@ export default function CodeBlock({
     <div
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
       {...props}
-      className={cn('text-[10px] md:text-xs', className)}
+      className={cn(
+        'text-[10px] md:text-xs font-mono [&_*]:font-mono',
+        className
+      )}
     />
   ) : (
     <div className="w-full h-32" />

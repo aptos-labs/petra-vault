@@ -26,6 +26,7 @@ import {
 } from '@radix-ui/react-icons';
 import { Button } from './ui/button';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 export function NavVaults() {
   const router = useRouter();
@@ -58,7 +59,7 @@ export function NavVaults() {
             <SidebarMenuButton
               size="lg"
               variant="outline"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground bg-secondary border"
+              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground bg-secondary"
             >
               {parsedVaultId && (
                 <div className="flex aspect-square size-8 items-center justify-center">
@@ -82,7 +83,7 @@ export function NavVaults() {
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 flex flex-col gap-1"
             align="start"
           >
             <div className="p-2 text-sm text-muted-foreground w-full">
@@ -99,7 +100,10 @@ export function NavVaults() {
                     if (isSelected) return;
                     router.push(`/vault/${createVaultId(vault)}`);
                   }}
-                  className="flex p-2"
+                  className={cn(
+                    'flex p-2',
+                    isSelected && 'bg-secondary hover:!bg-secondary'
+                  )}
                   data-testid={`nav-vault-${vault.address.toString()}-${vault.network}`}
                 >
                   <AptosAvatar value={vault.address.toString()} size={32} />

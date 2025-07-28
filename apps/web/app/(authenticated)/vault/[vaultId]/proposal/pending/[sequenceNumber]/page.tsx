@@ -252,124 +252,144 @@ export default function ProposalPage() {
             </CardDescription>
           </CardHeader>
           <Separator />
-          <CardContent className="flex flex-col gap-4">
-            <div>
-              <CardTitle>Payload</CardTitle>
-              <CardDescription>
-                The transaction payload is the function and arguments that will
-                be executed.
-              </CardDescription>
-              <div className="flex-1 overflow-auto w-full p-2 border rounded-md text-xs mt-2 bg-secondary">
-                {innerPayload && entryFunctionAbi.data && (
-                  <CodeBlock
-                    value={jsonStringify(
-                      formatPayloadWithAbi(innerPayload, entryFunctionAbi.data)
-                    )}
-                    className="[&>pre]:!bg-transparent "
-                  />
-                )}
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <AnimatePresence mode="popLayout">
-                {simulation.isLoading ? (
-                  <motion.div
-                    key="simulation-loading"
-                    initial={{ opacity: 0, filter: 'blur(10px)' }}
-                    animate={{ opacity: 1, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, filter: 'blur(10px)' }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="w-full flex justify-center items-center py-8">
-                      <LoadingSpinner />
-                    </div>
-                  </motion.div>
-                ) : simulation.isSimulationError ? (
-                  <motion.div
-                    key="simulation-error"
-                    initial={{ opacity: 0, filter: 'blur(10px)' }}
-                    animate={{ opacity: 1, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, filter: 'blur(10px)' }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <CardTitle>Transaction Simulation</CardTitle>
-                    <CardDescription className="mb-4">
-                      This simulation shows a preview of the transaction&apos;s
-                      details when executed.
-                    </CardDescription>
-                    <div className="w-full flex">
-                      <div className="text-destructive bg-destructive/10 p-4 rounded-lg text-sm border border-destructive border-dashed">
-                        <>{simulation.simulationError}</>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : simulation.isSuccess ? (
-                  <motion.div
-                    key="simulation-success"
-                    initial={{ opacity: 0, filter: 'blur(10px)' }}
-                    animate={{ opacity: 1, filter: 'blur(0px)' }}
-                    exit={{ opacity: 0, filter: 'blur(10px)' }}
-                    transition={{ duration: 0.3 }}
-                    className="flex flex-col gap-4"
-                  >
-                    <div>
-                      <CardHeader className="!px-0">
-                        <CardTitle>Balance Changes</CardTitle>
-                        <CardDescription className="mb-4">
-                          This shows a preview of the vault&apos;s asset changes
-                          after the transaction is executed.
-                        </CardDescription>
-                      </CardHeader>
-                      {balanceChanges ? (
-                        <div className="pb-4 pt-2 flex flex-col gap-2">
-                          {Object.entries(balanceChanges).map(
-                            ([asset, change]) => (
-                              <SimulationCoinRow
-                                key={`${vaultAddress}-${asset}`}
-                                asset={asset}
-                                delta={change.delta}
-                              />
-                            )
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-muted-foreground border border-dashed rounded-lg w-full bg-secondary text-center text-sm py-8">
-                          No balance changes
-                        </div>
+          {transaction.payload ? (
+            <CardContent className="flex flex-col gap-4">
+              <div>
+                <CardTitle>Payload</CardTitle>
+                <CardDescription>
+                  The transaction payload is the function and arguments that
+                  will be executed.
+                </CardDescription>
+                <div className="flex-1 overflow-auto w-full p-2 border rounded-md text-xs mt-2 bg-secondary">
+                  {innerPayload && entryFunctionAbi.data && (
+                    <CodeBlock
+                      value={jsonStringify(
+                        formatPayloadWithAbi(
+                          innerPayload,
+                          entryFunctionAbi.data
+                        )
                       )}
-                    </div>
-                    <div>
-                      <CardHeader className="!px-0">
-                        <CardTitle>Miscellaneous Details</CardTitle>
-                        <CardDescription>
-                          Other details about the transaction including gas and
-                          expiration.
-                        </CardDescription>
-                      </CardHeader>
-                      <div className="py-4 grid grid-cols-2 gap-2 text-sm text-muted-foreground font-display">
-                        <span>Max Gas Amount:</span>
-                        <span>
-                          {padEstimatedGas(Number(simulation.data.gas_used))}
-                        </span>
-                        <span>Gas Unit Price:</span>
-                        <span>{simulation.data.gas_unit_price}</span>
-                        <span>Expiration Timestamp:</span>
-                        <span>
-                          {new Date(
-                            Number(simulation.data.expiration_timestamp_secs) *
-                              1000
-                          ).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : null}
-              </AnimatePresence>
-            </div>
+                      className="[&>pre]:!bg-transparent "
+                    />
+                  )}
+                </div>
+              </div>
 
-            <div className="hidden lg:block">{renderConfirmationActions()}</div>
-          </CardContent>
+              <div className="pt-2">
+                <AnimatePresence mode="popLayout">
+                  {simulation.isLoading ? (
+                    <motion.div
+                      key="simulation-loading"
+                      initial={{ opacity: 0, filter: 'blur(10px)' }}
+                      animate={{ opacity: 1, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, filter: 'blur(10px)' }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="w-full flex justify-center items-center py-8">
+                        <LoadingSpinner />
+                      </div>
+                    </motion.div>
+                  ) : simulation.isSimulationError ? (
+                    <motion.div
+                      key="simulation-error"
+                      initial={{ opacity: 0, filter: 'blur(10px)' }}
+                      animate={{ opacity: 1, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, filter: 'blur(10px)' }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <CardTitle>Transaction Simulation</CardTitle>
+                      <CardDescription className="mb-4">
+                        This simulation shows a preview of the
+                        transaction&apos;s details when executed.
+                      </CardDescription>
+                      <div className="w-full flex">
+                        <div className="text-destructive bg-destructive/10 p-4 rounded-lg text-sm border border-destructive border-dashed">
+                          <>{simulation.simulationError}</>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : simulation.isSuccess ? (
+                    <motion.div
+                      key="simulation-success"
+                      initial={{ opacity: 0, filter: 'blur(10px)' }}
+                      animate={{ opacity: 1, filter: 'blur(0px)' }}
+                      exit={{ opacity: 0, filter: 'blur(10px)' }}
+                      transition={{ duration: 0.3 }}
+                      className="flex flex-col gap-4"
+                    >
+                      <div>
+                        <CardHeader className="!px-0">
+                          <CardTitle>Balance Changes</CardTitle>
+                          <CardDescription className="mb-4">
+                            This shows a preview of the vault&apos;s asset
+                            changes after the transaction is executed.
+                          </CardDescription>
+                        </CardHeader>
+                        {balanceChanges ? (
+                          <div className="pb-4 pt-2 flex flex-col gap-2">
+                            {Object.entries(balanceChanges).map(
+                              ([asset, change]) => (
+                                <SimulationCoinRow
+                                  key={`${vaultAddress}-${asset}`}
+                                  asset={asset}
+                                  delta={change.delta}
+                                />
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-muted-foreground border border-dashed rounded-lg w-full bg-secondary text-center text-sm py-8">
+                            No balance changes
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <CardHeader className="!px-0">
+                          <CardTitle>Miscellaneous Details</CardTitle>
+                          <CardDescription>
+                            Other details about the transaction including gas
+                            and expiration.
+                          </CardDescription>
+                        </CardHeader>
+                        <div className="py-4 grid grid-cols-2 gap-2 text-sm text-muted-foreground font-display">
+                          <span>Max Gas Amount:</span>
+                          <span>
+                            {padEstimatedGas(Number(simulation.data.gas_used))}
+                          </span>
+                          <span>Gas Unit Price:</span>
+                          <span>{simulation.data.gas_unit_price}</span>
+                          <span>Expiration Timestamp:</span>
+                          <span>
+                            {new Date(
+                              Number(
+                                simulation.data.expiration_timestamp_secs
+                              ) * 1000
+                            ).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+              </div>
+
+              <div className="hidden lg:block">
+                {renderConfirmationActions()}
+              </div>
+            </CardContent>
+          ) : (
+            <CardContent>
+              <div className="flex flex-col items-center justify-center gap-2">
+                <CardTitle className="text-destructive">
+                  Unsupported Transaction
+                </CardTitle>
+                <CardDescription>
+                  This type of transaction is not supported by Petra Vault and
+                  must be executed manually.
+                </CardDescription>
+              </div>
+            </CardContent>
+          )}
         </Card>
 
         <div className="col-span-8 lg:col-span-3 h-full flex flex-col gap-4">

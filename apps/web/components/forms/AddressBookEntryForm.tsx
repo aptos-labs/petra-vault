@@ -15,7 +15,6 @@ import {
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
 import { AccountAddress, Network } from '@aptos-labs/ts-sdk';
-import { isAddress } from '@aptos-labs/ts-sdk';
 import { useClients } from '@aptos-labs/react';
 import { useState } from 'react';
 
@@ -65,10 +64,11 @@ export default function AddressBookEntryForm({
     try {
       let resolvedAddress: AccountAddress;
 
-      if (isAddress(values.address)) {
+      // First try to parse as a direct address
+      try {
         resolvedAddress = AccountAddress.from(values.address);
-      } else {
-        // Try to resolve as ANS name
+      } catch {
+        // If that fails, try to resolve as ANS name
         const address = await client.fetchAddressFromName({ name: values.address });
         if (!address) {
           form.setError('address', { message: 'Unable to resolve ANS name' });

@@ -42,7 +42,7 @@ import AddressDisplay from '@/components/AddressDisplay';
 import VaultNameForm from '@/components/forms/VaultNameForm';
 import { toast } from 'sonner';
 import AddressBookModal from '@/components/modals/AddressBookModal';
-import { BookIcon } from '@radix-ui/react-icons';
+import { ReaderIcon } from '@radix-ui/react-icons';
 
 export default function VaultSettingsPage() {
   const trackEvent = useAnalytics();
@@ -114,7 +114,7 @@ export default function VaultSettingsPage() {
                     size="sm"
                     data-testid="open-address-book-button"
                   >
-                    <BookIcon className="w-4 h-4 mr-2" />
+                    <ReaderIcon className="w-4 h-4 mr-2" />
                     Manage Address Book
                   </Button>
                 </DialogTrigger>

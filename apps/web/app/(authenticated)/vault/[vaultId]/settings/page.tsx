@@ -41,6 +41,8 @@ import useAnalytics from '@/hooks/useAnalytics';
 import AddressDisplay from '@/components/AddressDisplay';
 import VaultNameForm from '@/components/forms/VaultNameForm';
 import { toast } from 'sonner';
+import AddressBookModal from '@/components/modals/AddressBookModal';
+import { BookIcon } from '@radix-ui/react-icons';
 
 export default function VaultSettingsPage() {
   const trackEvent = useAnalytics();
@@ -88,6 +90,40 @@ export default function VaultSettingsPage() {
           </div>
         </Card>
       )}
+
+      <Separator className="md:hidden" />
+
+      <Card className="grid md:grid-cols-2 md:px-8 border-0 md:border-1">
+        <h3 className="font-display text-lg font-semibold tracking-wide px-2 md:px-0">
+          Address Book
+        </h3>
+        <div className="px-2 md:px-6">
+          <section>
+            <CardHeader className="px-0">
+              <CardTitle className="font-medium">Custom Address Names</CardTitle>
+              <CardDescription>
+                Add custom names to addresses for easier identification across the app.
+                Names are network-specific and stored locally.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-0 pt-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="open-address-book-button"
+                  >
+                    <BookIcon className="w-4 h-4 mr-2" />
+                    Manage Address Book
+                  </Button>
+                </DialogTrigger>
+                <AddressBookModal />
+              </Dialog>
+            </CardContent>
+          </section>
+        </div>
+      </Card>
 
       <Separator className="md:hidden" />
 

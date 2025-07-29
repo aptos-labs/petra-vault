@@ -24,7 +24,15 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false
+  debug: false,
+
+  // Ignore common errors from wallets
+  ignoreErrors: [
+    'Cannot set property ethereum of #<Window> which has only a getter',
+    'Attempting to use a disconnected port object',
+    'Failed to connect to MetaMask',
+    'The request by this Web3 provider is timeout.'
+  ]
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

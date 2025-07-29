@@ -18,18 +18,22 @@ export default function ReceiveModal() {
   const { vaultAddress, vault } = useActiveVault();
 
   const handleShare = async () => {
-    if (navigator.share) {
-      await navigator.share({
-        title: 'Hello, check out my Petra Vault!',
-        text: `\nHere's my vault address: ${vaultAddress}\n`,
-        url: window.location.href
-      });
-    } else {
-      // Fallback for browsers that don't support the Web Share API
-      navigator.clipboard.writeText(vaultAddress);
-      toast.success(
-        'Address copied to clipboard (sharing not supported in this browser)'
-      );
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Hello, check out my Petra Vault!',
+          text: `\nHere's my vault address: ${vaultAddress}\n`,
+          url: window.location.href
+        });
+      } else {
+        // Fallback for browsers that don't support the Web Share API
+        navigator.clipboard.writeText(vaultAddress);
+        toast.success(
+          'Address copied to clipboard (sharing not supported in this browser)'
+        );
+      }
+    } catch {
+      /* empty */
     }
   };
 

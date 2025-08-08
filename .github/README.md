@@ -98,7 +98,7 @@ Runtime versions are defined in the [`.tool-versions`](../.tool-versions) file. 
 
 ### No-Code Indexer
 
-Petra Vault uses the No-Code Indexing (NCI) service from [Aptos Build](https://build.aptoslabs.com) in order to index multisig transactions and ownership discovery. In order to run the indexer, please follow the instructions in the [indexer README](../indexer/README.md).
+Petra Vault uses the No-Code Indexing (NCI) service from [Geomi](https://geomi.dev/) in order to index multisig transactions and ownership discovery. In order to run the indexer, please follow the instructions in the [indexer README](../indexer/README.md).
 
 ### Environment Variables
 
@@ -114,7 +114,7 @@ Required environment variables:
 NEXT_PUBLIC_ENABLE_REACT_SCAN=0
 NEXT_PUBLIC_ENABLE_EMBEDDED=1
 
-# API Keys for Aptos networks (obtain from https://developers.aptos.dev)
+# API Keys for Aptos networks (obtain from https://geomi.dev/)
 NEXT_PUBLIC_APTOS_MAINNET_API_KEY=<api_key>
 NEXT_PUBLIC_APTOS_TESTNET_API_KEY=<api_key>
 

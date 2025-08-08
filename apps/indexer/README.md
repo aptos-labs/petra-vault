@@ -1,6 +1,6 @@
 # Petra Vault Indexer
 
-Petra Vault uses the No-Code Indexing (NCI) service from [Aptos Build](https://build.aptoslabs.com) to index multisig transactions and enable ownership discovery. This service provides real-time indexing of on-chain data for both mainnet and testnet environments.
+Petra Vault uses the No-Code Indexing (NCI) service from [Geomi](https://geomi.dev/) to index multisig transactions and enable ownership discovery. This service provides real-time indexing of on-chain data for both mainnet and testnet environments.
 
 ## Table of Contents
 
@@ -11,7 +11,7 @@ Petra Vault uses the No-Code Indexing (NCI) service from [Aptos Build](https://b
 
 ### Step 1: Create a Project
 
-1. Log into [Aptos Build](https://build.aptoslabs.com)
+1. Log into [Geomi](https://geomi.dev/)
 2. Create a new project to host your indexers
 
 ### Step 2: Import Processors

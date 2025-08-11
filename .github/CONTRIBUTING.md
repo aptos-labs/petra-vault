@@ -141,7 +141,11 @@ When making changes to the configurations, it's best to make changes to child co
 
 The project's user-facing documentation is currently being handled through a closed-source repository. To make modifications to the documentation, please coordinate with a maintainer using a [Github Issue](https://github.com/aptos-labs/petra-vault/issues).
 
-## 9. Submitting a Pull Request
+## 9. Ecosystem Apps
+
+Ecosystem apps are a collection of whitelisted apps that can be embedded in Petra Vault iframes. This list is currently managed through a closed-source repository. To add a new ecosystem app, please make a request using a [Github Issue](https://github.com/aptos-labs/petra-vault/issues).
+
+## 10. Submitting a Pull Request
 
 When you submit a pull request, GitHub will automatically run checks and tests against your changes. If any of the checks fail:
 
@@ -152,6 +156,6 @@ When you submit a pull request, GitHub will automatically run checks and tests a
 
 Please ensure all checks pass before requesting a review.
 
-## 10. That's it!
+## 11. That's it!
 
 You're all set! If you have any questions, please reach out to a maintainer using a [Github Issue](https://github.com/aptos-labs/petra-vault/issues). We're here to help!

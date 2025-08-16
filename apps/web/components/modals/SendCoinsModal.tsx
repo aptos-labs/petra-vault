@@ -73,7 +73,8 @@ export default function SendCoinsModal({ onClose }: SendCoinsModalProps) {
 
   const recipientAddress = useMemo(() => {
     if (isEns(recipient)) return resolvedAddress?.toString();
-    if (isAddress(recipient, { ignoreSpecial: true })) return recipient;
+    if (isAddress(recipient, { ignoreSpecial: true, fixAddress: true }))
+      return recipient;
     return undefined;
   }, [resolvedAddress, recipient]);
 

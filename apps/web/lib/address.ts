@@ -12,8 +12,11 @@ export function isEns(address: string) {
 
 export function isAddress(
   address: string,
-  options?: { ignoreSpecial?: boolean }
+  options?: { ignoreSpecial?: boolean; fixAddress?: boolean }
 ) {
+  if (options?.fixAddress) {
+    address = address.startsWith('0x') ? address : `0x${address}`;
+  }
   let isValid = AccountAddress.isValid({ input: address, strict: true }).valid;
   if (options?.ignoreSpecial) isValid = isValid && address.length > 3;
   return isValid;

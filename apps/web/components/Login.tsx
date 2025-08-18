@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 import { WalletSelector } from './WalletSelector';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import {
   Carousel,
@@ -23,6 +23,7 @@ export default function Login({
 
   const { connected, account } = useWallet();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!api) return;
@@ -62,9 +63,23 @@ export default function Login({
 
   useEffect(() => {
     if (connected && account) {
+      const redirect = searchParams.get('redirect');
+      if (redirect) {
+        try {
+          const url = new URL(redirect, window.location.origin);
+
+          // Only allow internal redirects
+          if (url.origin === window.location.origin) {
+            router.push(url.pathname + url.search + url.hash);
+            return;
+          }
+        } catch {
+          /* empty */
+        }
+      }
       router.push('/home');
     }
-  }, [connected, router, account]);
+  }, [connected, router, account, searchParams]);
 
   return (
     <div

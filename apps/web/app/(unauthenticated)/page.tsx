@@ -3,6 +3,7 @@ import Login from '@/components/Login';
 import Link from 'next/link';
 import HackenBadge from '@/components/HackenBadge';
 import Image from 'next/image';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Login to Petra Vault',
@@ -36,7 +37,9 @@ export default function LoginPage() {
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full">
-            <Login />
+            <Suspense>
+              <Login />
+            </Suspense>
           </div>
         </div>
         <div className="flex justify-center">

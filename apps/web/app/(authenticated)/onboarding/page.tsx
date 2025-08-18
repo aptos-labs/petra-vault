@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useOnboarding } from '@/context/OnboardingProvider';
 import OnboardingAddOrImport from '@/components/OnboardingAddOrImport';
 import VerticalCutReveal from '@/components/ui/vertical-cut-reveal';
@@ -8,8 +10,27 @@ import { ArrowLeftIcon } from '@radix-ui/react-icons';
 import OnboardingImportSetName from '@/components/OnboardingImportSetName';
 import OnboardingSetConfig from '@/components/OnboardingSetConfig';
 import OnboardingReview from '@/components/OnboardingReview';
+
 export default function OnboardingPage() {
-  const { page } = useOnboarding();
+  const { page, importVaultAddress } = useOnboarding();
+  const searchParams = useSearchParams();
+
+  // If the address is in the search params, set it as the import vault address
+  useEffect(() => {
+    const address = searchParams.get('address');
+    if (address && page.current === 'add-or-import') {
+      importVaultAddress.set(address);
+      page.set('set-name');
+    }
+  }, [searchParams, page, importVaultAddress]);
+
+  const clearSearchParams = () => {
+    if (searchParams.get('address')) {
+      const params = new URLSearchParams(searchParams);
+      params.delete('address');
+      window.location.search = params.toString();
+    }
+  };
 
   const goBackRoutes = {
     'set-name': 'add-or-import',
@@ -74,6 +95,7 @@ export default function OnboardingPage() {
                   page.set(
                     goBackRoutes[page.current as keyof typeof goBackRoutes]
                   );
+                  clearSearchParams();
                 }}
               >
                 <ArrowLeftIcon />

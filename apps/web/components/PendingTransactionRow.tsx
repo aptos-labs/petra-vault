@@ -7,6 +7,8 @@ import { motion } from 'motion/react';
 import { useMemo } from 'react';
 import { Badge } from './ui/badge';
 import useMultisigSignaturesRequired from '@/hooks/useMultisigSignaturesRequired';
+import useMultisigOwners from '@/hooks/useMultisigOwners';
+import { AccountAddress } from '@aptos-labs/ts-sdk';
 
 interface PendingTransactionRowProps {
   transaction: PendingMultisigTransaction;
@@ -24,6 +26,9 @@ export function PendingTransactionRow({
   const { data: signaturesRequired } = useMultisigSignaturesRequired({
     address: transaction.multisigAddress.toString()
   });
+  const { data: multisigOwners } = useMultisigOwners({
+    address: transaction.multisigAddress.toString()
+  });
 
   const statusTextColor = useMemo(() => {
     return 'text-muted-foreground';
@@ -37,9 +42,17 @@ export function PendingTransactionRow({
     return <GlobeIcon className="size-4" />;
   }, []);
 
+  const votesByOwners = useMemo(() => {
+    return transaction.votes.approvals.filter((approval) => {
+      return multisigOwners?.some((owner) =>
+        AccountAddress.from(owner).equals(AccountAddress.from(approval))
+      );
+    });
+  }, [multisigOwners, transaction.votes.approvals]);
+
   const hasEnoughApprovals = useMemo(
-    () => transaction.votes.approvals.length >= Number(signaturesRequired),
-    [transaction.votes.approvals.length, signaturesRequired]
+    () => votesByOwners.length >= Number(signaturesRequired),
+    [votesByOwners.length, signaturesRequired]
   );
 
   return (
@@ -93,7 +106,7 @@ export function PendingTransactionRow({
             className="ml-auto text-[10px] md:text-xs"
           >
             <CheckIcon />
-            {transaction.votes.approvals.length} / {signaturesRequired}
+            {votesByOwners.length} / {signaturesRequired}
           </Badge>
         )}
       </div>

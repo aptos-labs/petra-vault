@@ -25,6 +25,7 @@ import {
 import useMultisigSequenceNumber from '@/hooks/useMultisigSequenceNumber';
 import useMultisigPendingTransactions from '@/hooks/useMultisigPendingTransactions';
 import { getSimulationQueryErrors } from '@/lib/transactions';
+import { useMemo } from 'react';
 
 export const [ActiveProposalProvider, useActiveProposal] = constate(
   ({ sequenceNumber }: { sequenceNumber: number }) => {
@@ -154,12 +155,28 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
           AccountAddress.from(rejection).equals(account?.address)
         ));
 
+    const votesByOwners = useMemo(
+      () => ({
+        approvals: transaction.data?.votes.approvals.filter((approval) => {
+          return owners.data?.some((owner) =>
+            AccountAddress.from(owner).equals(AccountAddress.from(approval))
+          );
+        }),
+        rejections: transaction.data?.votes.rejections.filter((rejection) => {
+          return owners.data?.some((owner) =>
+            AccountAddress.from(owner).equals(AccountAddress.from(rejection))
+          );
+        })
+      }),
+      [owners, transaction.data]
+    );
+
     const hasEnoughApprovals =
-      (transaction.data?.votes.approvals.length ?? 0) >=
+      (votesByOwners?.approvals?.length ?? 0) >=
       Number(signaturesRequired.data);
 
     const hasEnoughRejections =
-      (transaction.data?.votes.rejections.length ?? 0) >=
+      (votesByOwners?.rejections?.length ?? 0) >=
       Number(signaturesRequired.data);
 
     const pendingTransactionsAhead = latestSequenceNumber.data

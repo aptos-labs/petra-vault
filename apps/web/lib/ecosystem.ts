@@ -81,7 +81,7 @@ export const fallbackEcosystemApps: EcosystemApp[] = [
     type: 'dapp',
     description: 'Universal lending market connecting liquidity on Aptos',
     isPopular: false,
-    link: 'https://echelon.market/',
+    link: 'https://app.echelon.market/',
     logoUrl:
       'https://imagedelivery.net/1v0lk1OFEOmesBikJtB8QQ/7ae9dda7-8964-4f18-bdcf-cf171e49fd00/small100x100',
     logoUrlDark:

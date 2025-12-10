@@ -7,11 +7,17 @@ export interface HackenBadgeProps {
 
 export default function HackenBadge({ className }: HackenBadgeProps) {
   return (
-    <Link href="https://hacken.io/audits/petra-vault" target="_blank">
+    <Link
+      href="https://hacken.io/audits/petra-vault"
+      target="_blank"
+      className="flex items-center gap-2"
+    >
+      <span className="font-medium">Audited by</span>
+
       <img
-        src="https://wp.hacken.io/wp-content/uploads/2024/12/audited-by-hacken-outline-light.svg"
-        alt="Audited by Hacken"
-        className={cn('min-w-36 h-auto max-w-full', className)}
+        src="/hacken_wordmark.svg"
+        alt="Hacken Wordmark"
+        className={cn('h-3 w-auto max-w-full', className)}
       />
     </Link>
   );

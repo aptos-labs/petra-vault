@@ -19,8 +19,8 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@aptos-labs/js-pro": "^0.1.1",
-    "@aptos-labs/react": "^0.1.1",
+    "@aptos-labs/js-pro": "^0.1.5",
+    "@aptos-labs/react": "^0.1.5",
     "@aptos-labs/ts-sdk": "^3.1.3",
     "@aptos-labs/wallet-adapter-react": "^7.0.4",
     "@aptos-labs/wallet-api": "workspace:*",

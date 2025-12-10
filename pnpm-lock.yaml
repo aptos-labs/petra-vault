@@ -35,11 +35,11 @@ importers:
   apps/web:
     dependencies:
       '@aptos-labs/js-pro':
-        specifier: ^0.1.1
-        version: 0.1.1(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))
+        specifier: ^0.1.5
+        version: 0.1.5(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))
       '@aptos-labs/react':
-        specifier: ^0.1.1
-        version: 0.1.1(@aptos-labs/js-pro@0.1.1(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1)))(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@aptos-labs/wallet-adapter-react@7.0.4(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.1.10)(@wallet-standard/core@1.0.3)(aptos@1.19.0)(react@19.2.1))(@tanstack/react-query@5.85.3(react@19.2.1))(@types/react@19.1.10)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))
+        specifier: ^0.1.5
+        version: 0.1.5(@aptos-labs/js-pro@0.1.5(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1)))(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@aptos-labs/wallet-adapter-react@7.0.4(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.1.10)(@wallet-standard/core@1.0.3)(aptos@1.19.0)(react@19.2.1))(@tanstack/react-query@5.85.3(react@19.2.1))(@types/react@19.1.10)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))
       '@aptos-labs/ts-sdk':
         specifier: ^3.1.3
         version: 3.1.3(got@11.8.6)
@@ -314,16 +314,16 @@ packages:
     peerDependencies:
       got: ^11.8.6
 
-  '@aptos-labs/js-pro@0.1.1':
-    resolution: {integrity: sha512-Fwf1/ZpKf0ZVi99AQWSLt1w3KwJCrc2BtPobT5WJmmJ76lq+g6OaJTTOXX/SihrDy7+buPtLN54ejzZLEwHo3Q==}
+  '@aptos-labs/js-pro@0.1.5':
+    resolution: {integrity: sha512-9fuDCyo6cFqcYTE/i9BiA6VaE+5dpy/5qJ24gZv36Iu0wS+kCIcE4ZmbK92yFwZuK1ID6wNCEBcxt2VY8JO4dA==}
     peerDependencies:
       '@aptos-labs/ts-sdk': '>=1.35.0'
       typescript: '>=5.0.4'
 
-  '@aptos-labs/react@0.1.1':
-    resolution: {integrity: sha512-O97JduCYa//PcSA9eU+Ae1lBcuOssY53MJW6oUJ/k3eP9FatVM37sxgWXnRjZtdpzemaUvUF43/CABGIho9fIg==}
+  '@aptos-labs/react@0.1.5':
+    resolution: {integrity: sha512-Ij5vGp3EnrPXpfydbxITRMcxvz0TuZfaVyAtRIvc5Jb7XnrJdjDw9rkU+7DDtS00Wv4P1m6M3KGbGsej2K1/vA==}
     peerDependencies:
-      '@aptos-labs/js-pro': 0.1.1
+      '@aptos-labs/js-pro': 0.1.5
       '@aptos-labs/ts-sdk': '>=1.35.0'
       '@aptos-labs/wallet-adapter-react': ^4.0.0 || ^5.0.0 || ^6.0.0
       '@tanstack/react-query': '>=5.0.0'
@@ -6675,7 +6675,7 @@ snapshots:
     dependencies:
       got: 11.8.6
 
-  '@aptos-labs/js-pro@0.1.1(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))':
+  '@aptos-labs/js-pro@0.1.5(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))':
     dependencies:
       '@aptos-labs/ts-sdk': 3.1.3(got@11.8.6)
       '@noble/hashes': 1.8.0
@@ -6690,9 +6690,9 @@ snapshots:
       - react
       - use-sync-external-store
 
-  '@aptos-labs/react@0.1.1(@aptos-labs/js-pro@0.1.1(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1)))(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@aptos-labs/wallet-adapter-react@7.0.4(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.1.10)(@wallet-standard/core@1.0.3)(aptos@1.19.0)(react@19.2.1))(@tanstack/react-query@5.85.3(react@19.2.1))(@types/react@19.1.10)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))':
+  '@aptos-labs/react@0.1.5(@aptos-labs/js-pro@0.1.5(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1)))(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@aptos-labs/wallet-adapter-react@7.0.4(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@telegram-apps/bridge@1.9.2)(@types/react@19.1.10)(@wallet-standard/core@1.0.3)(aptos@1.19.0)(react@19.2.1))(@tanstack/react-query@5.85.3(react@19.2.1))(@types/react@19.1.10)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))':
     dependencies:
-      '@aptos-labs/js-pro': 0.1.1(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))
+      '@aptos-labs/js-pro': 0.1.5(@aptos-labs/ts-sdk@3.1.3(got@11.8.6))(@types/react@19.1.10)(react@19.2.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.2.1))
       '@aptos-labs/ts-sdk': 3.1.3(got@11.8.6)
       '@tanstack/react-query': 5.85.3(react@19.2.1)
       react: 19.2.1

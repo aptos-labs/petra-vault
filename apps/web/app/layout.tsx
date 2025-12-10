@@ -6,6 +6,7 @@ import AppProviders from '@/context/AppProviders';
 import { ThemeProvider } from '@/context/ThemeProvider';
 import { ReactScan } from '@/components/ReactScan';
 import Analytics from '@/components/background/Analytics';
+import TimeService from '@/components/background/TimeService';
 
 const workSans = Work_Sans({
   display: 'swap',
@@ -65,6 +66,7 @@ export default function RootLayout({
           </ThemeProvider>
         </body>
         <Analytics />
+        <TimeService />
       </AppProviders>
     </html>
   );

@@ -52,6 +52,7 @@ async function getServerTimeDelta() {
 export async function synchronizeTime() {
   try {
     serverTimeDelta = await getServerTimeDelta();
+    return serverTimeDelta;
   } catch (error) {
     if (!isProduction) {
       throw error;

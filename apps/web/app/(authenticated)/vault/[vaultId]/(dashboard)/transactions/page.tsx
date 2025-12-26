@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useMemo } from 'react';
 import { Network } from '@aptos-labs/ts-sdk';
 import { useAccount } from '@aptos-labs/react';
+import { isDevelopment } from '@/lib/development';
 
 export default function VaultTransactionsPage() {
   const account = useAccount();
@@ -66,7 +67,7 @@ export default function VaultTransactionsPage() {
 
   return (
     <div className="h-full flex flex-col pb-12">
-      {isOwner && (
+      {(isOwner || isDevelopment) && (
         <>
           <br />
           <VaultDetailsPendingTransactions />

@@ -103,8 +103,9 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
           sender: vaultAddress,
           payload: new TransactionPayloadEntryFunction(
             multisigPayload.transaction_payload
-          ),
-          feePayerAddress: AccountAddress.from(account.address)
+          )
+          // TODO: There is an issue with fee payer addresses not respecting gas estimation issues.
+          // feePayerAddress: AccountAddress.from(account.address)
         });
       },
       refetchInterval: 20 * 1000,
@@ -115,7 +116,12 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
       transaction: simulationPayload.data ?? undefined,
       network: { network },
       sender: AccountAddress.from(vaultAddress),
-      withFeePayer: true
+      // TODO: Revert this when the issue is fixed by the full node providers.
+      // withFeePayer: true,
+      options: {
+        estimateGasUnitPrice: true,
+        estimateMaxGasAmount: true
+      }
     });
 
     const transactionPayload = useQuery({

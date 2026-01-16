@@ -86,7 +86,7 @@ export default function useMultisigExecutionEvents({
       const userTransactions = await Promise.all(
         multisigTransactions.map((e) =>
           client.fetchTransaction({
-            ledgerVersion: e.version,
+            ledgerVersion: Number(e.version),
             network
           })
         )
@@ -135,14 +135,16 @@ export default function useMultisigExecutionEvents({
         acc.push({
           type: status,
           version: multisigTransaction.version,
-          payload: multisigTransaction.transaction_payload ?? undefined,
+          payload: multisigTransaction.transaction_payload as
+            | string
+            | undefined,
           approvals: multisigTransaction.num_approvals
             ? Number(multisigTransaction.num_approvals)
             : undefined,
           rejections: multisigTransaction.num_rejections
             ? Number(multisigTransaction.num_rejections)
             : undefined,
-          executor: AccountAddress.from(multisigTransaction.executor),
+          executor: AccountAddress.from(multisigTransaction.executor!),
           sequenceNumber: Number(multisigTransaction.sequence_number),
           transaction: userTransaction
         });

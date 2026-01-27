@@ -67,18 +67,28 @@ export const createMultisigVoteTransactionPayloadData = (args: {
   }
 };
 
+/**
+ * Attempt to deserialize a multisig transaction payload. If the payload is not a valid multisig transaction payload, return undefined.
+ *
+ * @param payload - The payload to deserialize.
+ * @returns The deserialized transaction payload or undefined if the payload is not a valid multisig transaction payload.
+ */
 export const deserializeMultisigTransactionPayload = (payload: string) => {
-  const multisigPayload = MultiSigTransactionPayload.deserialize(
-    new Deserializer(Hex.fromHexInput(payload).toUint8Array())
-  );
+  try {
+    const multisigPayload = MultiSigTransactionPayload.deserialize(
+      new Deserializer(Hex.fromHexInput(payload).toUint8Array())
+    );
 
-  const { transaction_payload: transactionPayload } = multisigPayload;
+    const { transaction_payload: transactionPayload } = multisigPayload;
 
-  return {
-    function: `${transactionPayload.module_name.address.toString()}::${transactionPayload.module_name.name.identifier}::${transactionPayload.function_name.identifier}`,
-    functionArguments: transactionPayload.args,
-    typeArguments: transactionPayload.type_args
-  };
+    return {
+      function: `${transactionPayload.module_name.address.toString()}::${transactionPayload.module_name.name.identifier}::${transactionPayload.function_name.identifier}`,
+      functionArguments: transactionPayload.args,
+      typeArguments: transactionPayload.type_args
+    };
+  } catch {
+    return undefined;
+  }
 };
 
 const formatFunctionArgument = (

@@ -55,6 +55,13 @@ export function PendingTransactionRow({
     [votesByOwners.length, signaturesRequired]
   );
 
+  const isHashedTransaction = transaction.payload === undefined;
+
+  const transactionPayload = useMemo(() => {
+    if (!transaction.payload) return undefined;
+    return deserializeMultisigTransactionPayload(transaction.payload);
+  }, [transaction.payload]);
+
   return (
     <motion.div className="flex items-center w-full p-2 px-4 hover:bg-secondary/70 group-data-expanded:!bg-secondary transition-all rounded-md cursor-pointer">
       <div
@@ -68,12 +75,11 @@ export function PendingTransactionRow({
       </div>
       <div className="md:px-4 py-1 text-left">
         <p className={cn('text-sm font-display font-semibold')}>
-          {transaction.payload
-            ? getEntryFunctionDisplayName(
-                deserializeMultisigTransactionPayload(transaction.payload)
-                  .function
-              )
-            : 'Hashed Transaction'}
+          {isHashedTransaction
+            ? 'Hashed Transaction'
+            : transactionPayload
+              ? getEntryFunctionDisplayName(transactionPayload.function)
+              : 'Unsupported Transaction'}
           {isNext && (
             <Badge
               variant="success"

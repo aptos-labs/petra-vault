@@ -12,10 +12,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useMemo } from 'react';
 import { Network } from '@aptos-labs/ts-sdk';
 import { useAccount } from '@aptos-labs/react';
+import { useSearchParams } from 'next/navigation';
 import { isDevelopment } from '@/lib/development';
 
 export default function VaultTransactionsPage() {
   const account = useAccount();
+  const searchParams = useSearchParams();
 
   const { vaultAddress, network, isOwner } = useActiveVault();
   const {
@@ -65,9 +67,11 @@ export default function VaultTransactionsPage() {
     return groupedByMonth;
   }, [executionEvents]);
 
+  const asOwnerFlag = searchParams.get('as_owner') === '1';
+
   return (
     <div className="h-full flex flex-col pb-12">
-      {(isOwner || isDevelopment) && (
+      {(isOwner || isDevelopment || asOwnerFlag) && (
         <>
           <br />
           <VaultDetailsPendingTransactions />

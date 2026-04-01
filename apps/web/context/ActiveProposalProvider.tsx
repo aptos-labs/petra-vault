@@ -15,6 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   AccountAddress,
   buildTransaction,
+  DEFAULT_MAX_GAS_AMOUNT,
   DEFAULT_TXN_EXP_SEC_FROM_NOW,
   Deserializer,
   Hex,

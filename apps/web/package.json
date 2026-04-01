@@ -21,8 +21,8 @@
   "dependencies": {
     "@aptos-labs/js-pro": "^0.1.7",
     "@aptos-labs/react": "^0.1.7",
-    "@aptos-labs/ts-sdk": "^5.2.1",
-    "@aptos-labs/wallet-adapter-react": "^8.3.0",
+    "@aptos-labs/ts-sdk": "^6.3.1",
+    "@aptos-labs/wallet-adapter-react": "^8.3.3",
     "@aptos-labs/wallet-api": "workspace:*",
     "@aptos-labs/wallet-standard": "^0.5.2",
     "@hookform/resolvers": "^4.1.3",

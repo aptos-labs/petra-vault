@@ -1,3 +1,4 @@
+import { fetchCachedTransaction } from '@/actions/fetchCachedTransaction';
 import { getMultisigIndexerClient } from '@/operations';
 import { NetworkInfo, Order_By } from '@aptos-labs/js-pro';
 import { useClients } from '@aptos-labs/react';
@@ -52,7 +53,7 @@ export default function useMultisigExecutionEvents({
   network,
   ...options
 }: UseMultisigExecutionEventsParameters) {
-  const { aptos, client } = useClients({ network });
+  const { aptos } = useClients({ network });
 
   const enabled = Boolean(
     network?.network !== Network.DEVNET && (options.enabled ?? true)
@@ -64,9 +65,9 @@ export default function useMultisigExecutionEvents({
     queryKey: ['multisig-execution-events', address, network],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
-      const multisigIndexerClient = getMultisigIndexerClient(
-        network?.network ?? aptos.config.network
-      );
+      const resolvedNetwork = network?.network ?? aptos.config.network;
+
+      const multisigIndexerClient = getMultisigIndexerClient(resolvedNetwork);
 
       if (!multisigIndexerClient) {
         console.error(
@@ -85,10 +86,7 @@ export default function useMultisigExecutionEvents({
 
       const userTransactions = await Promise.all(
         multisigTransactions.map((e) =>
-          client.fetchTransaction({
-            ledgerVersion: Number(e.version),
-            network
-          })
+          fetchCachedTransaction(Number(e.version), resolvedNetwork)
         )
       );
 

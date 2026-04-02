@@ -10,6 +10,7 @@ export type FetchCoinsResponse = z.infer<typeof fetchCoinsResponseSchema>;
 
 export const usePetraCoinsPrices = () => {
   return useQuery({
+    staleTime: 10 * 60_000,
     queryKey: ['petra-coins-prices'],
     queryFn: async () => {
       const response = await fetch(`${Endpoints.PETRA_PRICING}/prices`);

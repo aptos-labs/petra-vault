@@ -19,6 +19,7 @@ import {
   useSignAndSubmitTransaction,
   useWaitForTransaction
 } from '@aptos-labs/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Abis } from '@/lib/abis';
 import { jsonStringify } from '@/lib/storage';
@@ -31,6 +32,7 @@ export default function RemoveOwnerModal({
   ownerToRemove: string;
 }) {
   const trackEvent = useAnalytics();
+  const queryClient = useQueryClient();
 
   const router = useRouter();
 
@@ -71,6 +73,7 @@ export default function RemoveOwnerModal({
 
   useEffect(() => {
     if (isSuccess) {
+      queryClient.invalidateQueries();
       toast.success('Successfully created the transaction');
       router.push(`/vault/${id}/transactions`);
     } else if (isError) {

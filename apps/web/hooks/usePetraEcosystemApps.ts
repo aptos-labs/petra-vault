@@ -27,6 +27,7 @@ export type EcosystemAppsResponse = z.infer<typeof ecosystemAppsResponseSchema>;
 
 export const usePetraEcosystemApps = () => {
   return useQuery({
+    staleTime: 10 * 60_000,
     queryKey: ['petra-ecosystem-apps'],
     queryFn: async () => {
       const response = await fetch(

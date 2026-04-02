@@ -19,6 +19,7 @@ export default function useMultisigOwners({
   const { data, ...query } = useViewModule<
     ModuleViewReturnType<'0x1::multisig_account::owners'>
   >({
+    staleTime: 5 * 60_000,
     payload: {
       function: '0x1::multisig_account::owners',
       functionArguments: [address]

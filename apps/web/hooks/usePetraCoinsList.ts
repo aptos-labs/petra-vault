@@ -17,6 +17,7 @@ export type CoinMetadata = z.infer<typeof coinMetadataSchema>;
 
 export const usePetraCoinsList = () => {
   return useQuery({
+    staleTime: 10 * 60_000,
     queryKey: ['petra-coins-list'],
     queryFn: async () => {
       const response = await fetch(`${Endpoints.PETRA_PRICING}/coins/list`);

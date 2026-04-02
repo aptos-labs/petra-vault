@@ -17,6 +17,7 @@ import {
   useSignAndSubmitTransaction,
   useWaitForTransaction
 } from '@aptos-labs/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Pencil1Icon } from '@radix-ui/react-icons';
 import CodeBlock from '@/components/CodeBlock';
@@ -34,6 +35,7 @@ export default function UpdateSignaturesRequiredModal({
   currentSignaturesRequired: number;
 }) {
   const trackEvent = useAnalytics();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState<'update' | 'confirm'>('update');
   const [savedFormValues, setSavedFormValues] =
     useState<UpdateSignaturesRequiredFormValues>();
@@ -82,6 +84,7 @@ export default function UpdateSignaturesRequiredModal({
 
   useEffect(() => {
     if (isSuccess) {
+      queryClient.invalidateQueries();
       toast.success('Successfully created the transaction');
       router.push(`/vault/${id}/transactions`);
     } else if (isError) {

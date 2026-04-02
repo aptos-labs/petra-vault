@@ -13,6 +13,7 @@ export default function useEntryFunctionAbi({
   const { aptos } = useClients();
 
   return useQuery({
+    staleTime: 60 * 60_000,
     queryKey: ['function-abi', entryFunction],
     enabled: entryFunction !== undefined,
     queryFn: async () => {

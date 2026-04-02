@@ -9,6 +9,7 @@ import {
   useWaitForTransaction
 } from '@aptos-labs/react';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCreateProposalForm } from '@/context/CreateProposalFormProvider';
 import PageVaultHeader from '@/components/PageVaultHeader';
 import { useRouter } from 'next/navigation';
@@ -49,6 +50,7 @@ import { preprocessArgs } from '@/lib/abis';
 export default function CreateProposalPage() {
   const trackEvent = useAnalytics();
 
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   const [page, setPage] = useState<'set-details' | 'confirm'>('set-details');
@@ -128,6 +130,7 @@ export default function CreateProposalPage() {
 
   useEffect(() => {
     if (isSuccess) {
+      queryClient.invalidateQueries();
       toast.success('Proposal created');
       router.push(`/vault/${id}/transactions`);
     } else if (isError) {

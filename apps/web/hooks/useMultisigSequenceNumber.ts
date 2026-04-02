@@ -18,6 +18,7 @@ export default function useMultisigSequenceNumber({
   const { data, ...query } = useViewModule<
     ModuleViewReturnType<'0x1::multisig_account::last_resolved_sequence_number'>
   >({
+    staleTime: 60_000,
     payload: {
       function: '0x1::multisig_account::last_resolved_sequence_number',
       functionArguments: [address]

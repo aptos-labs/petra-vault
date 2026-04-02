@@ -22,6 +22,7 @@ import {
   useSignAndSubmitTransaction,
   useWaitForTransaction
 } from '@aptos-labs/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { Abis } from '@/lib/abis';
 import { jsonStringify } from '@/lib/storage';
@@ -36,6 +37,7 @@ export default function AddOwnerModal({
   signaturesRequired: number;
 }) {
   const trackEvent = useAnalytics();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState<'add' | 'confirm'>('add');
   const [savedFormValues, setSavedFormValues] =
     useState<AddOwnerProposalFormValues>();
@@ -93,6 +95,7 @@ export default function AddOwnerModal({
 
   useEffect(() => {
     if (isSuccess) {
+      queryClient.invalidateQueries();
       toast.success('Successfully created the transaction');
       router.push(`/vault/${id}/transactions`);
     } else if (isError) {

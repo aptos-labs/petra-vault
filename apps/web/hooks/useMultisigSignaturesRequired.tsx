@@ -18,6 +18,7 @@ export default function useMultisigSignaturesRequired({
   const { data, ...query } = useViewModule<
     ModuleViewReturnType<'0x1::multisig_account::num_signatures_required'>
   >({
+    staleTime: 5 * 60_000,
     payload: {
       function: '0x1::multisig_account::num_signatures_required',
       functionArguments: [address]

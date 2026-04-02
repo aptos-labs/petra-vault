@@ -28,6 +28,7 @@ export default function useMultisigPendingTransactions({
   const { data, ...query } = useViewModule<
     ModuleViewReturnType<'0x1::multisig_account::get_pending_transactions'>
   >({
+    staleTime: 60_000,
     payload: {
       function: '0x1::multisig_account::get_pending_transactions',
       functionArguments: [address]

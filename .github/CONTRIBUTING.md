@@ -120,20 +120,19 @@ When adding new features and flows, it's important to create tests that thorough
 
 ## 7. Developer Configurations
 
-Petra Vault uses [Prettier](https://prettier.io/) for formatting and [ESLint](https://eslint.org/) for linting.
+Petra Vault uses [Prettier](https://prettier.io/) for formatting and [Oxlint](https://oxc.rs/docs/guide/usage/linter/) for linting.
 
 - **Prettier** automatically formats your code to maintain consistent style
-- **ESLint** helps catch potential errors and enforce coding standards
+- **Oxlint** helps catch potential errors and enforce coding standards (fast, Rust-based; config lives in `apps/web/.oxlintrc.json`)
 
 You can run these tools using:
 
 - **Prettier:** `pnpm format`
-- **ESLint:** `pnpm lint`
+- **Lint:** `pnpm lint`
 
-In addition, to edit configurations we've centralized them into subpackages.
+In addition, TypeScript configuration is centralized:
 
-- **tsconfig:** `packages/eslint-config` - TypeScript configuration
-- **eslint:** `packages/typescript-config` - ESLint rules and settings
+- **tsconfig:** `packages/typescript-config` — shared TypeScript configuration
 
 When making changes to the configurations, it's best to make changes to child configurations rather than root configurations, as this ensures that changes are reflected in relevant projects without conflicts.
 

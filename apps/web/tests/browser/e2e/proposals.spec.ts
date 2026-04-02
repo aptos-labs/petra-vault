@@ -22,7 +22,7 @@ test('send coins using 0x1::aptos_account::transfer', async ({
 
   const vaultAddress = await vault.getVaultAddress();
 
-  await aptos.fundAccount(vaultAddress, Number(parseApt('1')));
+  await aptos.fundAccount(vaultAddress);
 
   const prevBalance = await aptos.getAccountAPTAmount(vaultAddress);
 
@@ -59,7 +59,7 @@ test('send coins using 0x1::aptos_account::transfer_coins to test type arguments
 
   const vaultAddress = await vault.getVaultAddress();
 
-  await aptos.fundAccount(vaultAddress, Number(parseApt('1')));
+  await aptos.fundAccount(vaultAddress);
 
   const prevBalance = await aptos.getAccountAPTAmount(vaultAddress);
 
@@ -96,7 +96,7 @@ test('send coins using 0x1::aptos_account::batch_transfer to test array inputs',
 
   const vaultAddress = await vault.getVaultAddress();
 
-  await aptos.fundAccount(vaultAddress, Number(parseApt('1')));
+  await aptos.fundAccount(vaultAddress);
 
   const prevBalance = await aptos.getAccountAPTAmount(vaultAddress);
 
@@ -136,7 +136,7 @@ test('publish contract', async ({
 
   const vaultAddress = await vault.getVaultAddress();
 
-  await aptos.fundAccount(vaultAddress, Number(parseApt('1')));
+  await aptos.fundAccount(vaultAddress);
 
   const contractJson = getPublishableContractJson(vaultAddress);
 
@@ -178,9 +178,9 @@ test('send coins from vault', async ({
 
   const vaultAddress = await vault.getVaultAddress();
 
-  await aptos.fundAccount(alice.accountAddress, Number(parseApt('1')));
+  await aptos.fundAccount(alice.accountAddress);
 
-  await aptos.fundAccount(vaultAddress, Number(parseApt('1')));
+  await aptos.fundAccount(vaultAddress);
 
   const prevBalance = await aptos.getAccountAPTAmount(vaultAddress);
 

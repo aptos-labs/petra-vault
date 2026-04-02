@@ -6,7 +6,6 @@
     ".": "./src/index.ts"
   },
   "devDependencies": {
-    "@aptos-labs/eslint-config-petra-vault": "workspace:*",
     "@aptos-labs/typescript-config-petra-vault": "workspace:*"
   },
   "dependencies": {

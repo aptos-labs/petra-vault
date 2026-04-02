@@ -1,5 +1,4 @@
 import {
-  AccountAddress,
   AccountAddressInput,
   Ed25519Account,
   Network

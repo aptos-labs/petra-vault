@@ -1,6 +1,5 @@
 import { Page } from '@playwright/test';
 import WalletFixture from './WalletFixture';
-import { parseApt } from '@aptos-labs/js-pro';
 import { AptosFixture } from './AptosFixture';
 import { Ed25519Account, Network } from '@aptos-labs/ts-sdk';
 import { NavigationFixture } from './NavigationFixture';
@@ -73,7 +72,7 @@ export class OnboardingFixture {
 
     const primaryAccount = await this.wallet.getAccount();
 
-    await this.aptos.fundAccount(primaryAccount.address, Number(parseApt('1')));
+    await this.aptos.fundAccount(primaryAccount.address);
 
     await this.page.getByTestId('sign-and-submit-create-vault-button').click();
 

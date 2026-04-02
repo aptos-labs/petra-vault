@@ -6,6 +6,7 @@ import {
 } from '@aptos-labs/ts-sdk';
 import { Page } from '@playwright/test';
 import WalletFixture from './WalletFixture';
+import { parseApt } from '@aptos-labs/js-pro';
 
 export class AptosFixture {
   constructor(
@@ -34,10 +35,18 @@ export class AptosFixture {
     );
   }
 
-  async fundAccount(address: AccountAddressInput, amount: number) {
+  async fundAccount(
+    address: AccountAddressInput,
+    amount: number = Number(parseApt('5'))
+  ) {
     const aptos = await this.getClient();
 
-    await aptos.faucet.fundAccount({ accountAddress: address, amount });
+    const transaction = await aptos.faucet.fundAccount({
+      accountAddress: address,
+      amount
+    });
+
+    await aptos.waitForTransaction({ transactionHash: transaction.hash });
   }
 
   async getAccountAPTAmount(address: AccountAddressInput) {

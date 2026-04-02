@@ -1,3 +1,8 @@
 {
-  "eslint.workingDirectories": [{ "mode": "auto" }]
+  "eslint.enable": false,
+  "oxc.enable.oxlint": true,
+  "oxc.enable.oxfmt": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.oxc": "always"
+  }
 }

@@ -36,7 +36,7 @@ export class ProposalFixture {
   async createSendCoinsProposal(
     recipient: AccountAddress,
     amount: number,
-    asset: string = '0x1::aptos_coin::AptosCoin'
+    _asset: string = '0x1::aptos_coin::AptosCoin'
   ) {
     await this.navigation.navigateTo('dashboard');
 

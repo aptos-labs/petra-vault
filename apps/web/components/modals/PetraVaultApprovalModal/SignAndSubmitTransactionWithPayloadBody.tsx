@@ -110,7 +110,17 @@ export default function SignAndSubmitTransactionWithPayloadBody({
 
   const onHandleApprove = () => {
     if (!transactionPayload) return;
-    onApprove({ data: transactionPayload, options: args.options });
+    onApprove({
+      data: transactionPayload,
+      options: {
+        ...args.options,
+        // TODO: This is a temporary fix to patch 0 gas amount issues.
+        maxGasAmount:
+          args.options?.maxGasAmount === 0
+            ? undefined
+            : args.options?.maxGasAmount
+      }
+    });
   };
 
   return (

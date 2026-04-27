@@ -74,6 +74,7 @@ export function serializeJsonTransactionPayload(
         : undefined;
     return { ...payload, transaction_payload: innerPayload };
   }
+  
   throw new Error('Unexpected transaction payload type');
 }
 

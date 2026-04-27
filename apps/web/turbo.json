@@ -3,7 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "generate"],
       "outputs": [".next/**", "!.next/cache/**", "out/**"],
       "env": ["SENTRY_AUTH_TOKEN", "NEXT_RUNTIME"]
     },
@@ -16,7 +16,8 @@
       "dependsOn": ["build"]
     },
     "test:e2e": {
-      "dependsOn": ["build"]
+      "dependsOn": ["build"],
+      "env": ["APTOS_DEVNET_FAUCET_AUTH_TOKEN"]
     }
   }
 }

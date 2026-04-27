@@ -25,12 +25,17 @@ export class AptosFixture {
       } as Record<Network, string | undefined>
     )[network.name];
 
+    const faucetToken = (
+      {
+        [Network.DEVNET]: process.env.APTOS_DEVNET_FAUCET_AUTH_TOKEN
+      } as Record<Network, string | undefined>
+    )[network.name];
+
     return new Aptos(
       new AptosConfig({
         network: network.name,
-        clientConfig: {
-          API_KEY: apiKey
-        }
+        clientConfig: { API_KEY: apiKey },
+        faucetConfig: { AUTH_TOKEN: faucetToken }
       })
     );
   }

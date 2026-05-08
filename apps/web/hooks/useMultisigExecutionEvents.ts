@@ -17,6 +17,8 @@ import {
 } from '@tanstack/react-query';
 import { LONG_FRAMEWORK_ADDRESS } from '@/lib/constants';
 
+const MULTISIG_EXECUTION_EVENTS_PAGE_SIZE = 15;
+
 export interface ExecutionEvent {
   type: 'success' | 'failed' | 'rejected';
   version: string;
@@ -81,6 +83,7 @@ export default function useMultisigExecutionEvents({
           multisigAccount: address,
           where: {},
           orderBy: [{ version: Order_By.Desc }],
+          limit: MULTISIG_EXECUTION_EVENTS_PAGE_SIZE,
           offset: pageParam
         });
 
@@ -152,8 +155,9 @@ export default function useMultisigExecutionEvents({
     },
     getPreviousPageParam: (_, __, ___, allPageParams) => allPageParams.at(-1),
     getNextPageParam: (lastPage, _, lastPageParam) =>
-      lastPage.length === 0 || lastPage.length !== 100
+      lastPage.length === 0 ||
+      lastPage.length !== MULTISIG_EXECUTION_EVENTS_PAGE_SIZE
         ? undefined
-        : lastPageParam + lastPage.length
+        : lastPageParam + MULTISIG_EXECUTION_EVENTS_PAGE_SIZE
   });
 }

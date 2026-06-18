@@ -53,8 +53,6 @@ export default function VaultExploreSearchPage() {
         ? inputUrl
         : `https://${inputUrl}`;
 
-      if (formattedUrl === url) return;
-
       try {
         const parsedUrl = new URL(formattedUrl);
 
@@ -68,6 +66,11 @@ export default function VaultExploreSearchPage() {
           );
           return;
         }
+
+        // Compare against the normalized href so resubmitting the same
+        // input (which `new URL` may canonicalize, e.g. by adding a
+        // trailing slash) does not trigger a redundant reload.
+        if (parsedUrl.href === url) return;
 
         setUrl(parsedUrl.href);
         setIsIframeLoading(true);

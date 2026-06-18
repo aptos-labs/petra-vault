@@ -48,10 +48,12 @@ export default function VaultExploreSearchPage() {
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (inputUrl.trim()) {
-      const formattedUrl = inputUrl.startsWith('http')
-        ? inputUrl
-        : `https://${inputUrl}`;
+    const trimmedUrl = inputUrl.trim();
+
+    if (trimmedUrl) {
+      const formattedUrl = trimmedUrl.startsWith('http')
+        ? trimmedUrl
+        : `https://${trimmedUrl}`;
 
       try {
         const parsedUrl = new URL(formattedUrl);

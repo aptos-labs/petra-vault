@@ -56,8 +56,20 @@ export default function VaultExploreSearchPage() {
       if (formattedUrl === url) return;
 
       try {
-        new URL(formattedUrl);
-        setUrl(formattedUrl);
+        const parsedUrl = new URL(formattedUrl);
+
+        // Only allow http(s) URLs to reach the iframe. This prevents
+        // dangerous schemes (e.g. javascript:, data:) from being loaded
+        // and executed inside the sandboxed frame.
+        if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+          console.warn(
+            'Unsupported URL protocol provided:',
+            parsedUrl.protocol
+          );
+          return;
+        }
+
+        setUrl(parsedUrl.href);
         setIsIframeLoading(true);
       } catch (error) {
         console.warn('Invalid URL provided:', error);

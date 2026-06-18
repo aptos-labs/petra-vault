@@ -39,7 +39,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "constate": "^3.3.3",
-    "dompurify": "^3.4.11",
+    "dompurify": "3.4.10",
     "dotenv": "^16.6.1",
     "embla-carousel-react": "^8.6.0",
     "graphql": "^16.13.2",

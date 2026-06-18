@@ -39,7 +39,7 @@ overrides:
   postcss: '>=8.5.10 <9'
   webpack: '>=5.104.1 <6'
   turbo: '>=2.9.14 <3'
-  dompurify: '>=3.4.11 <4'
+  dompurify: 3.4.10
   shell-quote: '>=1.8.4 <2'
   '@babel/core': '>=7.29.6 <8'
   '@opentelemetry/core': '>=2.8.0 <3'
@@ -135,8 +135,8 @@ importers:
         specifier: ^3.3.3
         version: 3.3.3(react@19.2.4)
       dompurify:
-        specifier: '>=3.4.11 <4'
-        version: 3.4.11
+        specifier: 3.4.10
+        version: 3.4.10
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
@@ -3990,8 +3990,8 @@ packages:
   dom-helpers@5.2.1:
     resolution: {integrity: sha512-nRCa7CK3VTrM2NmGkIy4cbK7IZlgBE/PYMn55rrXefr5xXDP0LdtfPnblFDoVdcAfslJ7or6iqAUnx0CCGIWQA==}
 
-  dompurify@3.4.11:
-    resolution: {integrity: sha512-zhlUV12GsaRzMsf9q5M254YhA4+VuF0fG+QFqu6aYpoGlKtz+w8//jBcGVYBgQkR5GHjUomejY84AV+/uPbWdw==}
+  dompurify@3.4.10:
+    resolution: {integrity: sha512-0xzNv0e7oYC6yyuOGZIABPM4qtg3QxLFniDNPP4ZP90wR8Yq3zgwpRbrNiT4N3IKqDbbYFEJLV+JWEs19aZ//w==}
 
   dot-case@3.0.4:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
@@ -10374,7 +10374,7 @@ snapshots:
       '@babel/runtime': 7.29.2
       csstype: 3.2.3
 
-  dompurify@3.4.11:
+  dompurify@3.4.10:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 

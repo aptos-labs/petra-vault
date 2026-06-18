@@ -46,7 +46,7 @@
       "postcss": ">=8.5.10 <9",
       "webpack": ">=5.104.1 <6",
       "turbo": ">=2.9.14 <3",
-      "dompurify": ">=3.4.11 <4",
+      "dompurify": "3.4.10",
       "shell-quote": ">=1.8.4 <2",
       "@babel/core": ">=7.29.6 <8",
       "@opentelemetry/core": ">=2.8.0 <3",

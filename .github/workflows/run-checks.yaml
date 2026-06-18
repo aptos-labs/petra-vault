@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 env:
   NEXT_PUBLIC_APTOS_DEVNET_API_KEY: ${{ secrets.NEXT_PUBLIC_APTOS_DEVNET_API_KEY }}
   NEXT_PUBLIC_MULTISIG_INDEXER_MAINNET_API_KEY: ${{ secrets.NEXT_PUBLIC_MULTISIG_INDEXER_MAINNET_API_KEY }}

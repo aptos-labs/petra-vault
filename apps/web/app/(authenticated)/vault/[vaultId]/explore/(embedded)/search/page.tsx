@@ -48,16 +48,33 @@ export default function VaultExploreSearchPage() {
   const handleUrlSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (inputUrl.trim()) {
-      const formattedUrl = inputUrl.startsWith('http')
-        ? inputUrl
-        : `https://${inputUrl}`;
+    const trimmedUrl = inputUrl.trim();
 
-      if (formattedUrl === url) return;
+    if (trimmedUrl) {
+      const formattedUrl = trimmedUrl.startsWith('http')
+        ? trimmedUrl
+        : `https://${trimmedUrl}`;
 
       try {
-        new URL(formattedUrl);
-        setUrl(formattedUrl);
+        const parsedUrl = new URL(formattedUrl);
+
+        // Only allow http(s) URLs to reach the iframe. This prevents
+        // dangerous schemes (e.g. javascript:, data:) from being loaded
+        // and executed inside the sandboxed frame.
+        if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+          console.warn(
+            'Unsupported URL protocol provided:',
+            parsedUrl.protocol
+          );
+          return;
+        }
+
+        // Compare against the normalized href so resubmitting the same
+        // input (which `new URL` may canonicalize, e.g. by adding a
+        // trailing slash) does not trigger a redundant reload.
+        if (parsedUrl.href === url) return;
+
+        setUrl(parsedUrl.href);
         setIsIframeLoading(true);
       } catch (error) {
         console.warn('Invalid URL provided:', error);

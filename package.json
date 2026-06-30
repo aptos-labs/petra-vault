@@ -17,15 +17,15 @@
     "prepare": "pnpm generate"
   },
   "devDependencies": {
-    "@types/node": "^22.15.33",
+    "@types/node": "22.20.0",
     "prettier": "catalog:",
     "oxlint": "catalog:",
-    "turbo": "^2.9.14",
+    "turbo": "2.10.0",
     "typescript": "catalog:",
-    "vitest": "^3.2.6"
+    "vitest": "4.1.9"
   },
   "packageManager": "pnpm@11.8.0",
   "engines": {
-    "node": ">=22.23.0"
+    "node": ">=22"
   }
 }

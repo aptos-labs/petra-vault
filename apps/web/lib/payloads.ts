@@ -5,6 +5,7 @@ import {
   InputEntryFunctionDataWithABI,
   Hex,
   Deserializer,
+  EntryFunction,
   MultiSigTransactionPayload,
   U64,
   EntryFunctionABI,
@@ -80,6 +81,13 @@ export const deserializeMultisigTransactionPayload = (payload: string) => {
     );
 
     const { transaction_payload: transactionPayload } = multisigPayload;
+
+    // As of ts-sdk 7, a multisig transaction payload can be either an
+    // `EntryFunction` or a `Script`. Petra Vault only supports entry function
+    // payloads today; script payload support is planned for a future update.
+    if (!(transactionPayload instanceof EntryFunction)) {
+      return undefined;
+    }
 
     return {
       function: `${transactionPayload.module_name.address.toString()}::${transactionPayload.module_name.name.identifier}::${transactionPayload.function_name.identifier}`,

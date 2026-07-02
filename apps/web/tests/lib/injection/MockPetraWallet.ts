@@ -212,7 +212,7 @@ export class MockPetraWallet implements AptosWallet {
     });
 
     return {
-      args: { hash: pendingTransaction.hash },
+      args: { hash: pendingTransaction.hash as `0x${string}` },
       status: UserResponseStatus.APPROVED
     };
   }

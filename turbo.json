@@ -1,7 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "globalEnv": ["NODE_ENV", "CI"],
+  "globalEnv": [
+    "NODE_ENV",
+    "CI",
+    "APTOS_MAINNET_API_KEY",
+    "APTOS_TESTNET_API_KEY",
+    "APTOS_DEVNET_API_KEY"
+  ],
   "globalPassThroughEnv": ["SENTRY_AUTH_TOKEN", "NEXT_RUNTIME"],
   "tasks": {
     "generate": {

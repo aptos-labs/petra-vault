@@ -7,9 +7,9 @@
   },
   "devDependencies": {
     "@aptos-labs/typescript-config-petra-vault": "workspace:*",
-    "@aptos-labs/ts-sdk": "^6.3.1"
+    "@aptos-labs/ts-sdk": "7.1.3"
   },
   "peerDependencies": {
-    "@aptos-labs/ts-sdk": "^6"
+    "@aptos-labs/ts-sdk": "^6 || ^7"
   }
 }

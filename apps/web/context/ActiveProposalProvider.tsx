@@ -17,6 +17,7 @@ import {
   buildTransaction,
   DEFAULT_TXN_EXP_SEC_FROM_NOW,
   Deserializer,
+  EntryFunction,
   Hex,
   MultiSig,
   MultiSigTransactionPayload,
@@ -92,6 +93,14 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
             Hex.fromHexInput(transaction.data?.payload).toUint8Array()
           )
         );
+
+        // As of ts-sdk 7, a multisig transaction payload can be either an
+        // `EntryFunction` or a `Script`. Petra Vault only simulates entry
+        // function payloads today; script payload support is planned for a
+        // future update.
+        if (!(multisigPayload.transaction_payload instanceof EntryFunction)) {
+          throw new Error('Unsupported multisig transaction payload type');
+        }
 
         return await buildTransaction({
           aptosConfig: aptos.config,

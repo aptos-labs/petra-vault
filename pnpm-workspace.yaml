@@ -11,14 +11,14 @@ catalog:
 
 catalogMode: prefer
 
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - '@sentry/cli'
-  - bufferutil
-  - esbuild
-  - msw
-  - sharp
-  - utf-8-validate
+allowBuilds:
+  '@parcel/watcher': true
+  '@sentry/cli': true
+  bufferutil: true
+  esbuild: true
+  msw: true
+  sharp: true
+  utf-8-validate: true
 
 overrides:
   keyv: 'npm:@keyvhq/core@~1.6.6'

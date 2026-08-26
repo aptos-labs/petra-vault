@@ -10,7 +10,7 @@ import {
   Form,
   FormDescription
 } from '../ui/form';
-import { Input } from '../ui/input';
+import EntryFunctionAutocomplete from './EntryFunctionAutocomplete';
 import Callout from '../Callout';
 import { useDebounce } from 'use-debounce';
 import useEntryFunctionAbi from '@/hooks/useEntryFunctionAbi';
@@ -106,10 +106,13 @@ export default function CreateProposalEntryFunctionForm({
                   <FormItem className="w-full">
                     <FormLabel>Entry Function</FormLabel>
                     <FormControl>
-                      <Input
-                        type="text"
-                        {...field}
-                        onChange={(e) => handleOnChange(e.target.value)}
+                      <EntryFunctionAutocomplete
+                        value={field.value}
+                        name={field.name}
+                        ref={field.ref}
+                        disabled={field.disabled}
+                        onBlur={field.onBlur}
+                        onChange={handleOnChange}
                         data-testid="entry-function-input"
                       />
                     </FormControl>

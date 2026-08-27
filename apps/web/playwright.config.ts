@@ -4,6 +4,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default defineConfig({
+  // Only the browser e2e specs; keeps Playwright from collecting Vitest
+  // `*.test.ts` unit tests (which clash on the jest-matchers global).
+  testDir: './tests/browser',
+
   retries: process.env.CI ? 3 : 0,
 
   timeout: 60 * 1000,

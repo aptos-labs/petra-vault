@@ -117,6 +117,11 @@ export interface EntryFunctionAutocompleteProps {
   disabled?: boolean;
   ref?: React.Ref<HTMLInputElement>;
   'data-testid'?: string;
+  // Injected by <FormControl> and forwarded to the underlying <input> so the
+  // label's htmlFor, description, and validation ARIA keep working.
+  id?: string;
+  'aria-describedby'?: string;
+  'aria-invalid'?: React.ComponentProps<'input'>['aria-invalid'];
 }
 
 /**
@@ -132,6 +137,9 @@ export default function EntryFunctionAutocomplete({
   name,
   disabled,
   ref,
+  id,
+  'aria-describedby': ariaDescribedBy,
+  'aria-invalid': ariaInvalid,
   'data-testid': dataTestId
 }: EntryFunctionAutocompleteProps) {
   const listboxId = useId();
@@ -255,6 +263,7 @@ export default function EntryFunctionAutocomplete({
       <PopoverAnchor asChild>
         <Input
           ref={ref}
+          id={id}
           type="text"
           name={name}
           value={value}
@@ -274,6 +283,8 @@ export default function EntryFunctionAutocomplete({
           aria-expanded={open}
           aria-controls={listboxId}
           aria-autocomplete="list"
+          aria-describedby={ariaDescribedBy}
+          aria-invalid={ariaInvalid}
           aria-activedescendant={
             open && activeIndex >= 0
               ? `${listboxId}-option-${activeIndex}`

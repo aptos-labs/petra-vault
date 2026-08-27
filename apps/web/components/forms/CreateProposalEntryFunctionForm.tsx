@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useWatch, UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import {
@@ -20,6 +20,12 @@ import React from 'react';
 import ExpandingContainer from '../ExpandingContainer';
 import { AnimatePresence, motion } from 'motion/react';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Bookmark, BookmarkCheck, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { useActiveVault } from '@/context/ActiveVaultProvider';
+import { useEntryFunctionBookmarks } from '@/context/useEntryFunctionBookmarks';
+import { getEntryFunctionDisplayName } from '@/lib/displayNames';
 
 const entryFunctionPresets = [
   { label: 'Transfer APT', value: '0x1::aptos_account::transfer' },
@@ -81,6 +87,21 @@ export default function CreateProposalEntryFunctionForm({
     onAbiChange?.(abi.data);
   }, [abi.data, onAbiChange]);
 
+  const { id: vaultId } = useActiveVault();
+
+  const allBookmarks = useEntryFunctionBookmarks((s) => s.bookmarks);
+  const hasBookmarksHydrated = useEntryFunctionBookmarks((s) => s.hasHydrated);
+  const addBookmark = useEntryFunctionBookmarks((s) => s.addBookmark);
+  const removeBookmark = useEntryFunctionBookmarks((s) => s.removeBookmark);
+
+  const bookmarks = useMemo(
+    () =>
+      [...(allBookmarks[vaultId] ?? [])].sort(
+        (a, b) => b.createdAt - a.createdAt
+      ),
+    [allBookmarks, vaultId]
+  );
+
   return (
     <Form {...form}>
       <form>
@@ -102,9 +123,53 @@ export default function CreateProposalEntryFunctionForm({
                   field.onChange(e);
                 };
 
+                const isValidEntryFunction = entryFunctionFormSchema.safeParse({
+                  entryFunction: field.value
+                }).success;
+
+                const isBookmarked = bookmarks.some(
+                  (bookmark) => bookmark.entryFunction === field.value
+                );
+
+                const toggleBookmark = () => {
+                  if (isBookmarked) {
+                    removeBookmark(vaultId, field.value);
+                    toast.success('Removed bookmark');
+                  } else {
+                    addBookmark(vaultId, field.value);
+                    toast.success('Bookmarked entry function');
+                  }
+                };
+
                 return (
                   <FormItem className="w-full">
-                    <FormLabel>Entry Function</FormLabel>
+                    <div className="flex items-center justify-between gap-2">
+                      <FormLabel>Entry Function</FormLabel>
+                      {hasBookmarksHydrated &&
+                        !disabled &&
+                        isValidEntryFunction && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground size-7"
+                            onClick={toggleBookmark}
+                            aria-pressed={isBookmarked}
+                            aria-label={
+                              isBookmarked
+                                ? 'Remove entry function bookmark'
+                                : 'Bookmark entry function'
+                            }
+                            data-testid="bookmark-entry-function-button"
+                          >
+                            {isBookmarked ? (
+                              <BookmarkCheck className="text-primary" />
+                            ) : (
+                              <Bookmark />
+                            )}
+                          </Button>
+                        )}
+                    </div>
                     <FormControl>
                       <EntryFunctionAutocomplete
                         value={field.value}
@@ -120,6 +185,47 @@ export default function CreateProposalEntryFunctionForm({
                       Must be in the format:{' '}
                       <span className="font-mono text-xs">{`0x{address}::{module_name}::{function_name}`}</span>
                     </FormDescription>
+                    {!field.value &&
+                      !disabled &&
+                      hasBookmarksHydrated &&
+                      bookmarks.length > 0 && (
+                        <div className="text-sm text-muted-foreground mt-2 flex items-center gap-2 w-full xl:overflow-x-scroll flex-wrap">
+                          <span className="font-display text-sm font-medium mr-1">
+                            Bookmarks{' '}
+                          </span>
+                          {bookmarks.map((bookmark) => (
+                            <Badge
+                              key={bookmark.entryFunction}
+                              variant="secondary"
+                              className="text-muted-foreground text-xs font-display cursor-pointer gap-1 pr-1"
+                              onClick={() =>
+                                handleOnChange(bookmark.entryFunction)
+                              }
+                              data-testid="entry-function-bookmark-badge"
+                            >
+                              {getEntryFunctionDisplayName(
+                                bookmark.entryFunction
+                              )}
+                              <button
+                                type="button"
+                                className="opacity-60 hover:opacity-100"
+                                aria-label="Remove bookmark"
+                                data-testid="remove-entry-function-bookmark-button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeBookmark(
+                                    vaultId,
+                                    bookmark.entryFunction
+                                  );
+                                }}
+                              >
+                                <X className="size-3" />
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+
                     {!field.value && !disabled && (
                       <div className="text-sm text-muted-foreground mt-0.5 flex items-center gap-2 w-full xl:overflow-x-scroll flex-wrap">
                         <span className="font-display text-sm font-medium mr-1">

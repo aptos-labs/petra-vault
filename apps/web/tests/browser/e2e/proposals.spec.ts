@@ -162,6 +162,50 @@ test('publish contract', async ({
   expect(modules.length).toBeGreaterThan(0);
 });
 
+test('bookmark an entry function in the create proposal form', async ({
+  onboarding,
+  navigation,
+  page
+}) => {
+  const alice = Ed25519Account.generate();
+
+  await onboarding.connectWallet(alice, Network.DEVNET);
+
+  await onboarding.createNewVault([alice]);
+
+  await navigation.navigateTo('proposals');
+
+  const input = page.getByTestId('entry-function-input');
+  await input.fill('0x1::aptos_account::transfer');
+
+  // Saving a bookmark flips the toggle into its bookmarked state.
+  const toggle = page.getByTestId('bookmark-entry-function-button');
+  await expect(toggle).toBeVisible();
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+
+  // Clearing the field surfaces the saved bookmark as a badge.
+  await input.fill('');
+  const badge = page.getByTestId('entry-function-bookmark-badge');
+  await expect(badge).toBeVisible();
+  await expect(badge).toContainText('Transfer APT');
+
+  // Selecting the bookmark refills the entry function field.
+  await badge.click();
+  await expect(input).toHaveValue('0x1::aptos_account::transfer');
+
+  // The bookmark persists when navigating away from and back to the form.
+  await navigation.navigateTo('dashboard');
+  await navigation.navigateTo('proposals');
+  await expect(page.getByTestId('entry-function-bookmark-badge')).toBeVisible();
+
+  // Removing the bookmark hides its badge.
+  await page.getByTestId('remove-entry-function-bookmark-button').click();
+  await expect(page.getByTestId('entry-function-bookmark-badge')).toHaveCount(
+    0
+  );
+});
+
 test('send coins from vault', async ({
   onboarding,
   vault,

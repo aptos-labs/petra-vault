@@ -250,9 +250,18 @@ export default function EntryFunctionAutocomplete({
           setOpen(false);
         }
         break;
-      case 'Tab':
-        setOpen(false);
+      case 'Tab': {
+        // Tab completes with the highlighted option (like Enter); with nothing
+        // to complete it falls through to move focus and closes the list.
+        const active = open ? suggestions[activeIndex] : undefined;
+        if (active) {
+          event.preventDefault();
+          handleSelect(active);
+        } else {
+          setOpen(false);
+        }
         break;
+      }
       default:
         break;
     }
@@ -297,10 +306,13 @@ export default function EntryFunctionAutocomplete({
       <PopoverContent
         align="start"
         sideOffset={4}
-        // Keep focus in the input and manage dismissal ourselves (blur / Escape /
-        // selection) so an anchored, never-focused panel can't spuriously close.
+        // Keep focus in the input and fully manage dismissal ourselves (blur /
+        // Escape / Tab / selection). The input is a PopoverAnchor, not a trigger,
+        // so Radix treats a pointer-down on it (moving the caret, selecting text)
+        // as an outside interaction — preventing both close events stops the list
+        // from vanishing mid-edit; a real outside click still closes it via blur.
         onOpenAutoFocus={(e) => e.preventDefault()}
-        onFocusOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
         className="w-[var(--radix-popover-trigger-width)] p-0"
       >
         <div

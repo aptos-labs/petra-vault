@@ -23,7 +23,6 @@ catalogs:
       version: 5.8.3
 
 overrides:
-  keyv: npm:@keyvhq/core@~1.6.6
   axios: npm:axios@^0.32.0
   esbuild: npm:esbuild@^0.25.0
   form-data: '>=4.0.6 <5'
@@ -152,9 +151,6 @@ importers:
       graphql-tag:
         specifier: ^2.12.6
         version: 2.12.6(graphql@16.13.2)
-      keyv:
-        specifier: npm:@keyvhq/core@~1.6.6
-        version: '@keyvhq/core@1.6.26'
       lucide-react:
         specifier: ^0.477.0
         version: 0.477.0(react@19.2.4)
@@ -1523,9 +1519,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@keyvhq/core@1.6.26':
-    resolution: {integrity: sha512-0jy/fOVCYdo3MImM3yjdHuFZNkycPmEAq0v+UGt0dRltnXccgQ+7vCdCNbLpgP3688g5Mw8L+0vcRt5MK53UPA==}
-    engines: {node: '>= 14'}
+  '@keyv/serialize@1.1.1':
+    resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
   '@mswjs/interceptors@0.37.6':
     resolution: {integrity: sha512-wK+5pLK5XFmgtH3aQ2YVvA3HohS3xqV/OxuVOdNx9Wpnz7VE/fnC+e1A7ln6LFYeck7gOJ/dsZV6OLplOtAJ2w==}
@@ -4668,6 +4663,12 @@ packages:
   jwt-decode@4.0.0:
     resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
     engines: {node: '>=18'}
+
+  keyv@4.5.4:
+    resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
+
+  keyv@5.6.0:
+    resolution: {integrity: sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw==}
 
   kleur@4.1.5:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
@@ -7850,9 +7851,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@keyvhq/core@1.6.26':
-    dependencies:
-      json-buffer: 3.0.1
+  '@keyv/serialize@1.1.1': {}
 
   '@mswjs/interceptors@0.37.6':
     dependencies:
@@ -10066,7 +10065,7 @@ snapshots:
       '@types/http-cache-semantics': 4.2.0
       get-stream: 9.0.1
       http-cache-semantics: 4.2.0
-      keyv: '@keyvhq/core@1.6.26'
+      keyv: 5.6.0
       mimic-response: 4.0.0
       normalize-url: 8.1.1
       responselike: 4.0.2
@@ -10657,7 +10656,7 @@ snapshots:
   flat-cache@4.0.1:
     dependencies:
       flatted: 3.4.2
-      keyv: '@keyvhq/core@1.6.26'
+      keyv: 4.5.4
 
   flatted@3.4.2: {}
 
@@ -10767,7 +10766,7 @@ snapshots:
       chunk-data: 0.1.0
       decompress-response: 10.0.0
       http2-wrapper: 2.2.1
-      keyv: '@keyvhq/core@1.6.26'
+      keyv: 5.6.0
       lowercase-keys: 4.0.1
       responselike: 4.0.2
       type-fest: 5.9.0
@@ -11101,6 +11100,14 @@ snapshots:
   json5@2.2.3: {}
 
   jwt-decode@4.0.0: {}
+
+  keyv@4.5.4:
+    dependencies:
+      json-buffer: 3.0.1
+
+  keyv@5.6.0:
+    dependencies:
+      '@keyv/serialize': 1.1.1
 
   kleur@4.1.5: {}
 

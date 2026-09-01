@@ -17,6 +17,7 @@ import {
   buildTransaction,
   DEFAULT_TXN_EXP_SEC_FROM_NOW,
   Deserializer,
+  EntryFunction,
   Hex,
   MultiSig,
   MultiSigTransactionPayload,
@@ -92,6 +93,14 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
             Hex.fromHexInput(transaction.data?.payload).toUint8Array()
           )
         );
+
+        // In ts-sdk v7 `transaction_payload` is `EntryFunction | Script`, but
+        // multisig transaction payloads are always entry functions on-chain.
+        if (!(multisigPayload.transaction_payload instanceof EntryFunction)) {
+          throw new Error(
+            'Multisig transaction payload is not an entry function'
+          );
+        }
 
         return await buildTransaction({
           aptosConfig: aptos.config,

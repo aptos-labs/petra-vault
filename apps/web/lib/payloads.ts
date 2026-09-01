@@ -68,6 +68,68 @@ export const createMultisigVoteTransactionPayloadData = (args: {
 };
 
 /**
+ * Collapse a list of sequence numbers into maximal contiguous runs. The input is
+ * sorted and de-duplicated first, so `[3, 1, 2, 5]` becomes `[[1, 3], [5, 5]]`.
+ *
+ * @param sequenceNumbers - The sequence numbers to group.
+ * @returns An array of `[start, end]` inclusive ranges.
+ */
+export const getContiguousRanges = (
+  sequenceNumbers: number[]
+): Array<[number, number]> => {
+  const sorted = [...new Set(sequenceNumbers)].sort((a, b) => a - b);
+
+  const ranges: Array<[number, number]> = [];
+  for (const sequenceNumber of sorted) {
+    const last = ranges[ranges.length - 1];
+    if (last && sequenceNumber === last[1] + 1) {
+      last[1] = sequenceNumber;
+    } else {
+      ranges.push([sequenceNumber, sequenceNumber]);
+    }
+  }
+
+  return ranges;
+};
+
+/**
+ * Build the vote payload for a single contiguous run of proposals. A run of one
+ * reuses the individual `approve_transaction` / `reject_transaction` entry
+ * functions (which do not require the multisig v2 enhancement feature); a longer
+ * run collapses into a single `vote_transactions` call over the inclusive range.
+ *
+ * Callers submit one payload per run so partial progress can be tracked when a
+ * later run fails — see `useBulkVoteProposals`.
+ */
+export const createRangeVoteTransactionPayloadData = (args: {
+  vaultAddress: string;
+  startSequenceNumber: number;
+  endSequenceNumber: number;
+  approve: boolean;
+}): InputGenerateTransactionPayloadData => {
+  const { vaultAddress, startSequenceNumber, endSequenceNumber, approve } =
+    args;
+
+  if (startSequenceNumber === endSequenceNumber) {
+    return createMultisigVoteTransactionPayloadData({
+      vaultAddress,
+      sequenceNumber: startSequenceNumber,
+      approve
+    });
+  }
+
+  return {
+    function: '0x1::multisig_account::vote_transactions',
+    functionArguments: [
+      vaultAddress,
+      startSequenceNumber,
+      endSequenceNumber,
+      approve
+    ]
+  };
+};
+
+/**
  * Attempt to deserialize a multisig transaction payload. If the payload is not a valid multisig transaction payload, return undefined.
  *
  * @param payload - The payload to deserialize.

@@ -118,8 +118,10 @@ describe('capPrefixToSelection', () => {
     expect(capPrefixToSelection([5, 6, 7, 8], new Set([5, 7, 8]))).toBe(1);
   });
 
-  it('returns zero when the front of the prefix is not selected', () => {
-    expect(capPrefixToSelection([5, 6, 7], new Set([6, 7]))).toBe(0);
+  it('does not narrow when the front of the prefix is not selected', () => {
+    // A voting-only selection of later proposals (or stale ids after the queue
+    // moved) must not hide execute/remove while the front is still ready.
+    expect(capPrefixToSelection([5, 6, 7], new Set([6, 7]))).toBe(3);
   });
 
   it('ignores selected sequence numbers outside the prefix', () => {

@@ -68,8 +68,11 @@ export const getResolvablePrefix = (
  * leading run of selected proposals — walking from the front and stopping at the
  * first unselected one (a gap blocks everything behind it).
  *
- * An empty selection means "no narrowing" and returns the full prefix length, so
- * the buttons default to acting on the entire ready prefix.
+ * Narrowing only kicks in when the **front** of the prefix is selected. The
+ * selection set is shared with approve/reject, so a selection that targets only
+ * later proposals to vote on — or holds stale ids after the queue moved — must
+ * not hide execute/remove while the front is still ready; in that case (and when
+ * nothing is selected) the full prefix length is returned.
  *
  * @param prefixSequenceNumbers - Sequence numbers of the prefix, front first.
  * @param selected - Currently selected sequence numbers.
@@ -78,7 +81,10 @@ export const capPrefixToSelection = (
   prefixSequenceNumbers: number[],
   selected: Set<number>
 ): number => {
-  if (selected.size === 0) return prefixSequenceNumbers.length;
+  const front = prefixSequenceNumbers[0];
+  if (front === undefined || !selected.has(front)) {
+    return prefixSequenceNumbers.length;
+  }
 
   let count = 0;
   for (const sequenceNumber of prefixSequenceNumbers) {

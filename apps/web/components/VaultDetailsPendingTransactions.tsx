@@ -14,14 +14,19 @@ import Link from 'next/link';
 import useMultisigPendingTransactions from '@/hooks/useMultisigPendingTransactions';
 import useMultisigSequenceNumber from '@/hooks/useMultisigSequenceNumber';
 import useBulkVoteProposals from '@/hooks/useBulkVoteProposals';
+import useBulkResolveProposals from '@/hooks/useBulkResolveProposals';
 import { useResourceType } from '@aptos-labs/react';
 import { useActiveVault } from '@/context/ActiveVaultProvider';
 import { PendingTransactionRow } from './PendingTransactionRow';
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useMemo, useState } from 'react';
+import { AccountAddress } from '@aptos-labs/ts-sdk';
+import { deserializeMultisigTransactionPayload } from '@/lib/payloads';
+import { capPrefixToSelection, getResolvablePrefix } from '@/lib/multisig';
 
 export default function VaultDetailsPendingTransactions() {
-  const { vaultAddress, network, id, isOwner } = useActiveVault();
+  const { vaultAddress, network, id, isOwner, owners, signaturesRequired } =
+    useActiveVault();
 
   const [selected, setSelected] = useState<Set<number>>(new Set());
 
@@ -63,12 +68,91 @@ export default function VaultDetailsPendingTransactions() {
       })
   });
 
+  const {
+    executeReady,
+    removeRejected,
+    isPending: isResolvePending
+  } = useBulkResolveProposals({
+    vaultAddress,
+    network,
+    onResolved: (resolved) =>
+      setSelected((prev) => {
+        const next = new Set(prev);
+        resolved.forEach((n) => next.delete(n));
+        return next;
+      })
+  });
+
+  const busy = isBulkVotePending || isResolvePending;
+
   const allSequenceNumbers = useMemo(
     () =>
       sequenceNumber !== undefined && pendingTransactions
         ? pendingTransactions.map((_, index) => sequenceNumber + 1 + index)
         : [],
     [pendingTransactions, sequenceNumber]
+  );
+
+  // Execute/remove act on a contiguous run from the front of the queue, since
+  // multisig transactions resolve strictly in sequence order.
+  const ownerAddresses = useMemo(
+    () =>
+      new Set(
+        (owners.data ?? []).map((o) => AccountAddress.from(o).toString())
+      ),
+    [owners.data]
+  );
+
+  const resolvableQueue = useMemo(
+    () =>
+      (pendingTransactions ?? []).map((tx) => ({
+        approvals: tx.votes.approvals.filter((approval) =>
+          ownerAddresses.has(AccountAddress.from(approval).toString())
+        ).length,
+        rejections: tx.votes.rejections.filter((rejection) =>
+          ownerAddresses.has(AccountAddress.from(rejection).toString())
+        ).length,
+        executable: tx.payload
+          ? deserializeMultisigTransactionPayload(tx.payload) !== undefined
+          : false
+      })),
+    [ownerAddresses, pendingTransactions]
+  );
+
+  const { executable: executableCount, removable: removableCount } = useMemo(
+    () => getResolvablePrefix(resolvableQueue, signaturesRequired.data ?? 0),
+    [resolvableQueue, signaturesRequired.data]
+  );
+
+  // A selection narrows execute/remove to the selected leading run; no selection
+  // acts on the whole ready prefix.
+  const executableCountToResolve = useMemo(
+    () =>
+      capPrefixToSelection(
+        allSequenceNumbers.slice(0, executableCount),
+        selected
+      ),
+    [allSequenceNumbers, executableCount, selected]
+  );
+
+  const removableCountToResolve = useMemo(
+    () =>
+      capPrefixToSelection(
+        allSequenceNumbers.slice(0, removableCount),
+        selected
+      ),
+    [allSequenceNumbers, removableCount, selected]
+  );
+
+  const executableProposals = useMemo(
+    () =>
+      (pendingTransactions ?? [])
+        .slice(0, executableCountToResolve)
+        .map((tx, index) => ({
+          sequenceNumber: (sequenceNumber ?? 0) + 1 + index,
+          payload: tx.payload!
+        })),
+    [executableCountToResolve, pendingTransactions, sequenceNumber]
   );
 
   const toggle = useCallback((proposalSequenceNumber: number) => {
@@ -169,6 +253,7 @@ export default function VaultDetailsPendingTransactions() {
                       size="sm"
                       variant="outline"
                       isLoading={isBulkVotePending}
+                      disabled={busy}
                       onClick={() => bulkVote(true, [...selected])}
                       data-testid="bulk-approve-button"
                     >
@@ -178,6 +263,7 @@ export default function VaultDetailsPendingTransactions() {
                       size="sm"
                       variant="outline"
                       isLoading={isBulkVotePending}
+                      disabled={busy}
                       onClick={() => bulkVote(false, [...selected])}
                       data-testid="bulk-reject-button"
                     >
@@ -186,13 +272,41 @@ export default function VaultDetailsPendingTransactions() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      disabled={isBulkVotePending}
+                      disabled={busy}
                       onClick={clear}
                       data-testid="bulk-selection-clear"
                     >
                       Clear
                     </Button>
                   </>
+                )}
+                {isOwner && executableCountToResolve > 0 && (
+                  <Button
+                    size="sm"
+                    isLoading={isResolvePending}
+                    disabled={busy}
+                    onClick={() => executeReady(executableProposals)}
+                    data-testid="bulk-execute-button"
+                  >
+                    Execute ({executableCountToResolve})
+                  </Button>
+                )}
+                {isOwner && removableCountToResolve > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    isLoading={isResolvePending}
+                    disabled={busy}
+                    onClick={() =>
+                      removeRejected(
+                        allSequenceNumbers[removableCountToResolve - 1]!,
+                        removableCountToResolve
+                      )
+                    }
+                    data-testid="bulk-remove-button"
+                  >
+                    Remove ({removableCountToResolve})
+                  </Button>
                 )}
                 <Button asChild size="sm">
                   <Link href={`/vault/${id}/proposal/create`}>
@@ -213,7 +327,7 @@ export default function VaultDetailsPendingTransactions() {
                           ? 'indeterminate'
                           : false
                     }
-                    disabled={isBulkVotePending}
+                    disabled={busy}
                     onCheckedChange={(checked) =>
                       checked ? selectAll() : clear()
                     }
@@ -244,7 +358,7 @@ export default function VaultDetailsPendingTransactions() {
                         <Checkbox
                           className="ml-2 shrink-0 md:ml-4"
                           checked={selected.has(proposalSequenceNumber)}
-                          disabled={isBulkVotePending}
+                          disabled={busy}
                           onCheckedChange={() => toggle(proposalSequenceNumber)}
                           data-testid={`pending-transaction-checkbox-${proposalSequenceNumber}`}
                           aria-label={`Select proposal ${proposalSequenceNumber}`}

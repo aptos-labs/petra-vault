@@ -251,6 +251,125 @@ test('bulk reject pending proposals', async ({
   ).toBeVisible();
 });
 
+test('bulk execute ready proposals', async ({
+  onboarding,
+  vault,
+  proposal,
+  aptos,
+  navigation,
+  page
+}) => {
+  const alice = Ed25519Account.generate();
+
+  await onboarding.connectWallet(alice, Network.DEVNET);
+
+  // A 1-of-1 vault so alice's own approval makes each proposal executable.
+  await onboarding.createNewVault([alice]);
+
+  const vaultAddress = await vault.getVaultAddress();
+
+  // Alice pays gas for the executions; the vault funds the transfers.
+  await aptos.fundAccount(alice.accountAddress);
+  await aptos.fundAccount(vaultAddress);
+
+  const prevBalance = await aptos.getAccountAPTAmount(vaultAddress);
+
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.1);
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.2);
+
+  // Execute the whole ready prefix from the queue in one action.
+  await navigation.navigateToHomeTab('transactions');
+  await page.getByTestId('bulk-execute-button').click();
+
+  await expect(page.getByTestId('pending-transactions-empty')).toBeVisible();
+
+  const newBalance = await aptos.getAccountAPTAmount(vaultAddress);
+  expect(newBalance).toBe(prevBalance - Number(parseApt('0.3')));
+});
+
+test('selection narrows the bulk execute count', async ({
+  onboarding,
+  vault,
+  proposal,
+  aptos,
+  navigation,
+  page
+}) => {
+  const alice = Ed25519Account.generate();
+
+  await onboarding.connectWallet(alice, Network.DEVNET);
+
+  await onboarding.createNewVault([alice]);
+
+  const vaultAddress = await vault.getVaultAddress();
+
+  await aptos.fundAccount(alice.accountAddress);
+  await aptos.fundAccount(vaultAddress);
+
+  const prevBalance = await aptos.getAccountAPTAmount(vaultAddress);
+
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.1);
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.2);
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.3);
+
+  await navigation.navigateToHomeTab('transactions');
+
+  // All three are executable by default.
+  await expect(page.getByTestId('bulk-execute-button')).toHaveText(
+    'Execute (3)'
+  );
+
+  // Selecting the two front proposals narrows the action to just those.
+  await page.getByTestId('pending-transaction-checkbox-1').click();
+  await page.getByTestId('pending-transaction-checkbox-2').click();
+  await expect(page.getByTestId('bulk-execute-button')).toHaveText(
+    'Execute (2)'
+  );
+
+  await page.getByTestId('bulk-execute-button').click();
+
+  // Only proposals #1 and #2 executed; #3 stays pending.
+  await expect(page.getByTestId('pending-transaction-3')).toBeVisible();
+  await expect(page.getByTestId('pending-transaction-1')).toHaveCount(0);
+
+  const newBalance = await aptos.getAccountAPTAmount(vaultAddress);
+  expect(newBalance).toBe(prevBalance - Number(parseApt('0.3')));
+});
+
+test('bulk remove rejected proposals', async ({
+  onboarding,
+  vault,
+  proposal,
+  aptos,
+  navigation,
+  page
+}) => {
+  const alice = Ed25519Account.generate();
+
+  await onboarding.connectWallet(alice, Network.DEVNET);
+
+  // A 1-of-1 vault so alice's own rejection makes each proposal removable.
+  await onboarding.createNewVault([alice]);
+
+  const vaultAddress = await vault.getVaultAddress();
+
+  await aptos.fundAccount(alice.accountAddress);
+  await aptos.fundAccount(vaultAddress);
+
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.1);
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.2);
+
+  // Flip alice's votes from approve to reject so both become removable.
+  await navigation.navigateToHomeTab('transactions');
+  await page.getByTestId('pending-transactions-select-all').click();
+  await page.getByTestId('bulk-reject-button').click();
+  await expect(page.getByText(/Rejected 2 proposals/)).toBeVisible();
+
+  // Remove the rejected prefix in a single transaction.
+  await page.getByTestId('bulk-remove-button').click();
+  await expect(page.getByTestId('pending-transactions-empty')).toBeVisible();
+});
+
 test('send coins from vault', async ({
   onboarding,
   vault,

@@ -131,6 +131,34 @@ export const createRangeVoteTransactionPayloadData = (args: {
 };
 
 /**
+ * Build the payload to remove one or more fully-rejected proposals from the
+ * front of the queue in a single transaction. Rejected transactions are removed
+ * strictly in order starting at `last_resolved_sequence_number + 1`, so `count`
+ * proposals are removed up to `finalSequenceNumber`.
+ *
+ * A single removal reuses `execute_rejected_transaction` (no multisig v2
+ * enhancement feature required); removing several collapses into one
+ * `execute_rejected_transactions` call over the range.
+ */
+export const createRemoveRejectedTransactionPayloadData = (args: {
+  vaultAddress: string;
+  finalSequenceNumber: number;
+  count: number;
+}): InputGenerateTransactionPayloadData => {
+  if (args.count <= 1) {
+    return {
+      function: '0x1::multisig_account::execute_rejected_transaction',
+      functionArguments: [args.vaultAddress]
+    };
+  }
+
+  return {
+    function: '0x1::multisig_account::execute_rejected_transactions',
+    functionArguments: [args.vaultAddress, args.finalSequenceNumber]
+  };
+};
+
+/**
  * Attempt to deserialize a multisig transaction payload. If the payload is not a valid multisig transaction payload, return undefined.
  *
  * @param payload - The payload to deserialize.

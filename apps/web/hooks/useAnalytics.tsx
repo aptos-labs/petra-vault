@@ -22,7 +22,9 @@ type AnalyticsEvent = {
       transactions: number;
     };
     execute_proposal: { hash: string };
+    bulk_execute_proposals: { count: number };
     remove_proposal: { hash: string };
+    bulk_remove_proposals: { count: number };
   };
   onboarding: {
     set_vault_name: {};

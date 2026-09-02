@@ -7,6 +7,7 @@ import {
   Deserializer,
   MultiSigTransactionPayload,
   U64,
+  EntryFunction,
   EntryFunctionABI,
   EntryFunctionArgument,
   TypeTag,
@@ -142,6 +143,10 @@ export const deserializeMultisigTransactionPayload = (payload: string) => {
     );
 
     const { transaction_payload: transactionPayload } = multisigPayload;
+
+    // Multisig transaction payloads are always entry functions on-chain; in
+    // ts-sdk v7 `transaction_payload` widened to `EntryFunction | Script`.
+    if (!(transactionPayload instanceof EntryFunction)) return undefined;
 
     return {
       function: `${transactionPayload.module_name.address.toString()}::${transactionPayload.module_name.name.identifier}::${transactionPayload.function_name.identifier}`,

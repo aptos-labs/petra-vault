@@ -231,8 +231,12 @@ test('bulk reject pending proposals', async ({
   await proposal.createSendCoinsProposal(alice.accountAddress, 0.2);
 
   // Alice has approved proposal #1, so the detail page offers to reject it.
+  // The detail page renders the actions twice (desktop + mobile layouts), so
+  // scope to the first match to avoid a strict-mode violation.
   await navigation.navigateToPendingTransaction(1);
-  await expect(page.getByTestId('reject-transaction-button')).toBeVisible();
+  await expect(
+    page.getByTestId('reject-transaction-button').first()
+  ).toBeVisible();
 
   // Select every pending proposal and reject them together.
   await navigation.navigateToHomeTab('transactions');
@@ -242,7 +246,9 @@ test('bulk reject pending proposals', async ({
 
   // Alice's vote flipped from approve to reject, so she can approve again.
   await navigation.navigateToPendingTransaction(1);
-  await expect(page.getByTestId('approve-transaction-button')).toBeVisible();
+  await expect(
+    page.getByTestId('approve-transaction-button').first()
+  ).toBeVisible();
 });
 
 test('send coins from vault', async ({

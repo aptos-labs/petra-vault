@@ -206,6 +206,51 @@ test('bookmark an entry function in the create proposal form', async ({
   );
 });
 
+test('bulk reject pending proposals', async ({
+  onboarding,
+  vault,
+  proposal,
+  aptos,
+  navigation,
+  page
+}) => {
+  const alice = Ed25519Account.generate();
+  const bob = Ed25519Account.generate();
+
+  await onboarding.connectWallet(alice, Network.DEVNET);
+
+  // A 2-of-2 vault so alice's vote alone never resolves a proposal.
+  await onboarding.createNewVault([alice, bob], 2);
+
+  const vaultAddress = await vault.getVaultAddress();
+
+  await aptos.fundAccount(vaultAddress);
+
+  // Two proposals, each auto-approved by alice as the creator.
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.1);
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.2);
+
+  // Alice has approved proposal #1, so the detail page offers to reject it.
+  // The detail page renders the actions twice (desktop + mobile layouts), so
+  // scope to the first match to avoid a strict-mode violation.
+  await navigation.navigateToPendingTransaction(1);
+  await expect(
+    page.getByTestId('reject-transaction-button').first()
+  ).toBeVisible();
+
+  // Select every pending proposal and reject them together.
+  await navigation.navigateToHomeTab('transactions');
+  await page.getByTestId('pending-transactions-select-all').click();
+  await page.getByTestId('bulk-reject-button').click();
+  await expect(page.getByText(/Rejected 2 proposals/)).toBeVisible();
+
+  // Alice's vote flipped from approve to reject, so she can approve again.
+  await navigation.navigateToPendingTransaction(1);
+  await expect(
+    page.getByTestId('approve-transaction-button').first()
+  ).toBeVisible();
+});
+
 test('send coins from vault', async ({
   onboarding,
   vault,

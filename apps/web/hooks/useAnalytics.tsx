@@ -16,6 +16,11 @@ type AnalyticsEvent = {
     create_publish_contract_proposal: { hash: string };
     create_update_signatures_required_proposal: { hash: string };
     vote_proposal: { hash: string; action?: 'approve' | 'reject' };
+    bulk_vote_proposals: {
+      action: 'approve' | 'reject';
+      count: number;
+      transactions: number;
+    };
     execute_proposal: { hash: string };
     remove_proposal: { hash: string };
   };

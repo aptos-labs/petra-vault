@@ -20,8 +20,14 @@ export interface ResolvableProposal {
  *
  * Given the pending queue in sequence order, returns how many proposals from the
  * front are ready to **execute** (enough approvals and a runnable payload) and
- * how many are ready to **remove** (enough rejections). Each stops at the first
- * proposal that doesn't qualify, since anything behind it is blocked.
+ * how many are ready to **remove** (enough rejections but not enough approvals).
+ * Each stops at the first proposal that doesn't qualify, since anything behind it
+ * is blocked.
+ *
+ * A proposal can meet both thresholds at once (e.g. a 1-of-N vault with one
+ * approval and one rejection). Approvals take precedence — it's executed, not
+ * removed — mirroring the single-proposal page, so Remove is never offered for a
+ * ready-to-execute proposal.
  *
  * @param queue - Pending proposals in ascending sequence-number order.
  * @param signaturesRequired - Approvals/rejections needed to resolve a proposal.
@@ -43,7 +49,10 @@ export const getResolvablePrefix = (
 
   let removable = 0;
   for (const proposal of queue) {
-    if (proposal.rejections >= signaturesRequired) {
+    if (
+      proposal.rejections >= signaturesRequired &&
+      proposal.approvals < signaturesRequired
+    ) {
       removable += 1;
     } else {
       break;

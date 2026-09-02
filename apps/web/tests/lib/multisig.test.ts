@@ -62,6 +62,20 @@ describe('getResolvablePrefix', () => {
     );
   });
 
+  it('executes rather than removes when a proposal meets both thresholds', () => {
+    // A 1-of-N vault can have a front proposal with one approval and one
+    // rejection — approvals win, so it is executable and not removable.
+    const both: ResolvableProposal = {
+      approvals: 1,
+      rejections: 1,
+      executable: true
+    };
+    expect(getResolvablePrefix([both, rejected()], 1)).toEqual({
+      executable: 1,
+      removable: 0
+    });
+  });
+
   it('respects the signatures-required threshold', () => {
     const oneApproval: ResolvableProposal = {
       approvals: 1,

@@ -75,7 +75,12 @@ export default function VaultDetailsPendingTransactions() {
   } = useBulkResolveProposals({
     vaultAddress,
     network,
-    onResolved: () => setSelected(new Set())
+    onResolved: (resolved) =>
+      setSelected((prev) => {
+        const next = new Set(prev);
+        resolved.forEach((n) => next.delete(n));
+        return next;
+      })
   });
 
   const busy = isBulkVotePending || isResolvePending;

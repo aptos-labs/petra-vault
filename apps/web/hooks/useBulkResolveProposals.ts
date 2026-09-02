@@ -29,8 +29,12 @@ export interface BulkExecutableProposal {
 export interface UseBulkResolveProposalsOptions {
   vaultAddress: string;
   network: Network;
-  /** Called after at least one proposal was executed or removed. */
-  onResolved?: () => void;
+  /**
+   * Called with the sequence numbers that were executed or removed. Fires on
+   * partial progress too, so callers can drop exactly those from any selection
+   * and leave unresolved ones in place.
+   */
+  onResolved?: (resolvedSequenceNumbers: number[]) => void;
 }
 
 /**
@@ -139,7 +143,7 @@ export default function useBulkResolveProposals({
         );
       }
 
-      if (executed.length > 0) onResolved?.();
+      if (executed.length > 0) onResolved?.(executed);
 
       await queryClient.invalidateQueries();
       setIsPending(false);
@@ -178,7 +182,14 @@ export default function useBulkResolveProposals({
           `Removed ${count} rejected proposal${count === 1 ? '' : 's'}!`
         );
 
-        onResolved?.();
+        // execute_rejected_transactions removes the contiguous prefix ending at
+        // finalSequenceNumber, i.e. `count` proposals back to its start.
+        onResolved?.(
+          Array.from(
+            { length: count },
+            (_, i) => finalSequenceNumber - count + 1 + i
+          )
+        );
       } catch {
         toast.error(
           'There was an issue removing the rejected proposals. Please try again.'

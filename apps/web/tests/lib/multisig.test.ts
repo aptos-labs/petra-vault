@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { getResolvablePrefix, ResolvableProposal } from '../../lib/multisig';
+import {
+  capPrefixToSelection,
+  getResolvablePrefix,
+  ResolvableProposal
+} from '../../lib/multisig';
 
 const approved = (executable = true): ResolvableProposal => ({
   approvals: 2,
@@ -97,5 +101,28 @@ describe('getResolvablePrefix', () => {
       executable: 0,
       removable: 0
     });
+  });
+});
+
+describe('capPrefixToSelection', () => {
+  it('returns the full prefix length when nothing is selected', () => {
+    expect(capPrefixToSelection([5, 6, 7, 8, 9], new Set())).toBe(5);
+  });
+
+  it('narrows to the selected leading run of the prefix', () => {
+    // Remove(5) becomes Remove(2) when only the two front proposals are selected.
+    expect(capPrefixToSelection([5, 6, 7, 8, 9], new Set([5, 6]))).toBe(2);
+  });
+
+  it('stops at the first unselected proposal (a gap blocks the rest)', () => {
+    expect(capPrefixToSelection([5, 6, 7, 8], new Set([5, 7, 8]))).toBe(1);
+  });
+
+  it('returns zero when the front of the prefix is not selected', () => {
+    expect(capPrefixToSelection([5, 6, 7], new Set([6, 7]))).toBe(0);
+  });
+
+  it('ignores selected sequence numbers outside the prefix', () => {
+    expect(capPrefixToSelection([5, 6], new Set([5, 6, 7, 8]))).toBe(2);
   });
 });

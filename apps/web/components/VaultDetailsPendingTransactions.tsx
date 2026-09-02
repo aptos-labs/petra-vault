@@ -22,7 +22,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useMemo, useState } from 'react';
 import { AccountAddress } from '@aptos-labs/ts-sdk';
 import { deserializeMultisigTransactionPayload } from '@/lib/payloads';
-import { getResolvablePrefix } from '@/lib/multisig';
+import { capPrefixToSelection, getResolvablePrefix } from '@/lib/multisig';
 
 export default function VaultDetailsPendingTransactions() {
   const { vaultAddress, network, id, isOwner, owners, signaturesRequired } =
@@ -124,15 +124,35 @@ export default function VaultDetailsPendingTransactions() {
     [resolvableQueue, signaturesRequired.data]
   );
 
+  // A selection narrows execute/remove to the selected leading run; no selection
+  // acts on the whole ready prefix.
+  const executableCountToResolve = useMemo(
+    () =>
+      capPrefixToSelection(
+        allSequenceNumbers.slice(0, executableCount),
+        selected
+      ),
+    [allSequenceNumbers, executableCount, selected]
+  );
+
+  const removableCountToResolve = useMemo(
+    () =>
+      capPrefixToSelection(
+        allSequenceNumbers.slice(0, removableCount),
+        selected
+      ),
+    [allSequenceNumbers, removableCount, selected]
+  );
+
   const executableProposals = useMemo(
     () =>
       (pendingTransactions ?? [])
-        .slice(0, executableCount)
+        .slice(0, executableCountToResolve)
         .map((tx, index) => ({
           sequenceNumber: (sequenceNumber ?? 0) + 1 + index,
           payload: tx.payload!
         })),
-    [executableCount, pendingTransactions, sequenceNumber]
+    [executableCountToResolve, pendingTransactions, sequenceNumber]
   );
 
   const toggle = useCallback((proposalSequenceNumber: number) => {
@@ -260,7 +280,7 @@ export default function VaultDetailsPendingTransactions() {
                     </Button>
                   </>
                 )}
-                {isOwner && executableCount > 0 && (
+                {isOwner && executableCountToResolve > 0 && (
                   <Button
                     size="sm"
                     isLoading={isResolvePending}
@@ -268,10 +288,10 @@ export default function VaultDetailsPendingTransactions() {
                     onClick={() => executeReady(executableProposals)}
                     data-testid="bulk-execute-button"
                   >
-                    Execute ({executableCount})
+                    Execute ({executableCountToResolve})
                   </Button>
                 )}
-                {isOwner && removableCount > 0 && (
+                {isOwner && removableCountToResolve > 0 && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -279,13 +299,13 @@ export default function VaultDetailsPendingTransactions() {
                     disabled={busy}
                     onClick={() =>
                       removeRejected(
-                        allSequenceNumbers[removableCount - 1]!,
-                        removableCount
+                        allSequenceNumbers[removableCountToResolve - 1]!,
+                        removableCountToResolve
                       )
                     }
                     data-testid="bulk-remove-button"
                   >
-                    Remove ({removableCount})
+                    Remove ({removableCountToResolve})
                   </Button>
                 )}
                 <Button asChild size="sm">

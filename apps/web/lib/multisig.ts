@@ -61,3 +61,33 @@ export const getResolvablePrefix = (
 
   return { executable, removable };
 };
+
+/**
+ * Narrow a front-of-queue prefix to the user's selection. Execute/remove act
+ * strictly in sequence order, so a selection can only shrink the action to the
+ * leading run of selected proposals — walking from the front and stopping at the
+ * first unselected one (a gap blocks everything behind it).
+ *
+ * An empty selection means "no narrowing" and returns the full prefix length, so
+ * the buttons default to acting on the entire ready prefix.
+ *
+ * @param prefixSequenceNumbers - Sequence numbers of the prefix, front first.
+ * @param selected - Currently selected sequence numbers.
+ */
+export const capPrefixToSelection = (
+  prefixSequenceNumbers: number[],
+  selected: Set<number>
+): number => {
+  if (selected.size === 0) return prefixSequenceNumbers.length;
+
+  let count = 0;
+  for (const sequenceNumber of prefixSequenceNumbers) {
+    if (selected.has(sequenceNumber)) {
+      count += 1;
+    } else {
+      break;
+    }
+  }
+
+  return count;
+};

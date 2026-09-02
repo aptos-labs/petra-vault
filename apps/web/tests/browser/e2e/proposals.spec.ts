@@ -287,6 +287,55 @@ test('bulk execute ready proposals', async ({
   expect(newBalance).toBe(prevBalance - Number(parseApt('0.3')));
 });
 
+test('selection narrows the bulk execute count', async ({
+  onboarding,
+  vault,
+  proposal,
+  aptos,
+  navigation,
+  page
+}) => {
+  const alice = Ed25519Account.generate();
+
+  await onboarding.connectWallet(alice, Network.DEVNET);
+
+  await onboarding.createNewVault([alice]);
+
+  const vaultAddress = await vault.getVaultAddress();
+
+  await aptos.fundAccount(alice.accountAddress);
+  await aptos.fundAccount(vaultAddress);
+
+  const prevBalance = await aptos.getAccountAPTAmount(vaultAddress);
+
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.1);
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.2);
+  await proposal.createSendCoinsProposal(alice.accountAddress, 0.3);
+
+  await navigation.navigateToHomeTab('transactions');
+
+  // All three are executable by default.
+  await expect(page.getByTestId('bulk-execute-button')).toHaveText(
+    'Execute (3)'
+  );
+
+  // Selecting the two front proposals narrows the action to just those.
+  await page.getByTestId('pending-transaction-checkbox-1').click();
+  await page.getByTestId('pending-transaction-checkbox-2').click();
+  await expect(page.getByTestId('bulk-execute-button')).toHaveText(
+    'Execute (2)'
+  );
+
+  await page.getByTestId('bulk-execute-button').click();
+
+  // Only proposals #1 and #2 executed; #3 stays pending.
+  await expect(page.getByTestId('pending-transaction-3')).toBeVisible();
+  await expect(page.getByTestId('pending-transaction-1')).toHaveCount(0);
+
+  const newBalance = await aptos.getAccountAPTAmount(vaultAddress);
+  expect(newBalance).toBe(prevBalance - Number(parseApt('0.3')));
+});
+
 test('bulk remove rejected proposals', async ({
   onboarding,
   vault,

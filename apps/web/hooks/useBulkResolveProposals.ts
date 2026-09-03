@@ -4,6 +4,7 @@ import {
   buildTransaction,
   DEFAULT_TXN_EXP_SEC_FROM_NOW,
   Deserializer,
+  EntryFunction,
   Hex,
   MultiSig,
   MultiSigTransactionPayload,
@@ -77,6 +78,15 @@ export default function useBulkResolveProposals({
           const multisigPayload = MultiSigTransactionPayload.deserialize(
             new Deserializer(Hex.fromHexInput(payload).toUint8Array())
           );
+
+          // In ts-sdk v7 `transaction_payload` is `EntryFunction | Script`, but
+          // multisig transaction payloads are always entry functions on-chain.
+          // getResolvablePrefix already filters these out; this narrows the type.
+          if (!(multisigPayload.transaction_payload instanceof EntryFunction)) {
+            throw new Error(
+              'Multisig transaction payload is not an entry function'
+            );
+          }
 
           const expireTimestamp =
             Math.floor(client.getServerTime() / 1000) +

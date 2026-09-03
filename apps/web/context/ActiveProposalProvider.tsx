@@ -82,6 +82,8 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
     const simulationPayload = useQuery({
       queryKey: [
         'simulation-proposal-transaction-payload',
+        network,
+        vaultAddress,
         transaction.data?.payload,
         account?.address?.toString()
       ],
@@ -137,6 +139,8 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
     const transactionPayload = useQuery({
       queryKey: [
         'proposal-transaction-payload',
+        network,
+        vaultAddress,
         transaction.data?.payload,
         account?.address?.toString()
       ],
@@ -177,12 +181,24 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
           }
         });
 
+        // A failed prologue (e.g. replica lag or a shifted queue) only reports
+        // the gas burned before the abort, which would set a uselessly small
+        // ceiling. Don't build a transaction from a simulation that didn't
+        // succeed — let the query error and the caller retry.
+        if (!executeSimulation.success) {
+          throw new Error(
+            `Execute simulation failed: ${executeSimulation.vm_status}`
+          );
+        }
+
         return await buildTransaction({
           aptosConfig: aptos.config,
           sender: account.address,
           payload,
           options: {
-            maxGasAmount: bufferEstimatedGas(Number(executeSimulation.gas_used)),
+            maxGasAmount: bufferEstimatedGas(
+              Number(executeSimulation.gas_used)
+            ),
             gasUnitPrice: Number(executeSimulation.gas_unit_price),
             expireTimestamp
           }

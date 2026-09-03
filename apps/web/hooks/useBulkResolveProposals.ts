@@ -115,6 +115,16 @@ export default function useBulkResolveProposals({
             }
           });
 
+          // A failed prologue (e.g. replica lag or a shifted queue) only reports
+          // the gas burned before the abort, which would set a uselessly small
+          // ceiling. Bail out so this proposal counts as a failure rather than
+          // submitting a transaction that would run out of gas.
+          if (!simulation.success) {
+            throw new Error(
+              `Execute simulation failed: ${simulation.vm_status}`
+            );
+          }
+
           const transaction = await buildTransaction({
             aptosConfig: aptos.config,
             sender: account.address,

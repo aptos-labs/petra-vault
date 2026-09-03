@@ -27,6 +27,7 @@ import {
 import useMultisigSequenceNumber from '@/hooks/useMultisigSequenceNumber';
 import useMultisigPendingTransactions from '@/hooks/useMultisigPendingTransactions';
 import { getSimulationQueryErrors } from '@/lib/transactions';
+import { bufferEstimatedGas } from '@/lib/gas';
 import { useMemo } from 'react';
 
 export const [ActiveProposalProvider, useActiveProposal] = constate(
@@ -134,31 +135,60 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
     });
 
     const transactionPayload = useQuery({
-      queryKey: ['proposal-transaction-payload', simulation.data?.hash],
+      queryKey: [
+        'proposal-transaction-payload',
+        transaction.data?.payload,
+        account?.address?.toString()
+      ],
       queryFn: async () => {
-        if (!transaction.data?.payload || !account?.address || !simulation.data)
+        if (!transaction.data?.payload || !account?.address)
           throw new Error('Missing required transaction payload');
 
         const multisigPayload = MultiSigTransactionPayload.deserialize(
           new Deserializer(
-            Hex.fromHexInput(transaction.data?.payload).toUint8Array()
+            Hex.fromHexInput(transaction.data.payload).toUint8Array()
           )
         );
 
+        const expireTimestamp =
+          Math.floor(client.getServerTime() / 1000) +
+          DEFAULT_TXN_EXP_SEC_FROM_NOW;
+
+        const payload = new TransactionPayloadMultiSig(
+          new MultiSig(AccountAddress.from(vaultAddress), multisigPayload)
+        );
+
+        // Simulate the actual multisig execute wrapper as the owner (prologue +
+        // inner payload + epilogue) so the gas ceiling reflects what the
+        // transaction really spends, instead of estimating from the inner
+        // payload and padding. `enabled` restricts this to executable proposals,
+        // where the multisig prologue passes.
+        const executeSimulation = await client.simulateTransaction({
+          network: { network },
+          transaction: await buildTransaction({
+            aptosConfig: aptos.config,
+            sender: account.address,
+            payload,
+            options: { expireTimestamp }
+          }),
+          options: {
+            estimateGasUnitPrice: true,
+            estimateMaxGasAmount: true
+          }
+        });
+
         return await buildTransaction({
           aptosConfig: aptos.config,
-          sender: account?.address,
-          payload: new TransactionPayloadMultiSig(
-            new MultiSig(AccountAddress.from(vaultAddress), multisigPayload)
-          ),
+          sender: account.address,
+          payload,
           options: {
-            // maxGasAmount: Number(simulation.data.gas_used) * 10,
-            gasUnitPrice: Number(simulation.data.gas_unit_price),
-            expireTimestamp: Number(simulation.data.expiration_timestamp_secs)
+            maxGasAmount: bufferEstimatedGas(Number(executeSimulation.gas_used)),
+            gasUnitPrice: Number(executeSimulation.gas_unit_price),
+            expireTimestamp
           }
         });
       },
-      enabled: !!simulationPayload.data
+      enabled: canExecute.data === true && !!account?.address
     });
 
     const isUserApproved =

@@ -354,10 +354,24 @@ export default function ProposalPage() {
                         <div className="py-4 grid grid-cols-2 gap-2 text-sm text-muted-foreground font-display">
                           <span>Max Gas Amount:</span>
                           <span>
-                            {padEstimatedGas(Number(simulation.data.gas_used))}
+                            {transactionPayload.data
+                              ? Number(
+                                  transactionPayload.data.rawTransaction
+                                    .max_gas_amount
+                                )
+                              : padEstimatedGas(
+                                  Number(simulation.data.gas_used)
+                                )}
                           </span>
                           <span>Gas Unit Price:</span>
-                          <span>{simulation.data.gas_unit_price}</span>
+                          <span>
+                            {transactionPayload.data
+                              ? Number(
+                                  transactionPayload.data.rawTransaction
+                                    .gas_unit_price
+                                )
+                              : simulation.data.gas_unit_price}
+                          </span>
                           <span>Expiration Timestamp:</span>
                           <span>
                             {new Date(

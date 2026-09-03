@@ -173,15 +173,18 @@ export default function ProposalPage() {
       }
 
       if (action === 'execute') {
-        const transaction = await transactionPayload.refetch();
+        // React Query keeps the last successful data on a failed refetch, so
+        // check the fresh result isn't an error before submitting — otherwise a
+        // failed rebuild would resubmit a stale, possibly expired transaction.
+        const { data, isError } = await transactionPayload.refetch();
 
-        if (!transaction.data) {
+        if (isError || !data) {
           return toast.error(
             'There was an issue building your transaction, please try again.'
           );
         }
 
-        signAndSubmitPrimaryAction({ transaction: transaction.data });
+        signAndSubmitPrimaryAction({ transaction: data });
       }
     },
     [signAndSubmitPrimaryAction, transactionPayload, vaultAddress]

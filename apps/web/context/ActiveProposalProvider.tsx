@@ -27,7 +27,7 @@ import {
 import useMultisigSequenceNumber from '@/hooks/useMultisigSequenceNumber';
 import useMultisigPendingTransactions from '@/hooks/useMultisigPendingTransactions';
 import { getSimulationQueryErrors } from '@/lib/transactions';
-import { bufferEstimatedGas } from '@/lib/gas';
+import { bufferEstimatedGas, padEstimatedGas } from '@/lib/gas';
 import { useMemo } from 'react';
 
 export const [ActiveProposalProvider, useActiveProposal] = constate(
@@ -181,24 +181,24 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
           }
         });
 
-        // A failed prologue (e.g. replica lag or a shifted queue) only reports
-        // the gas burned before the abort, which would set a uselessly small
-        // ceiling. Don't build a transaction from a simulation that didn't
-        // succeed — let the query error and the caller retry.
-        if (!executeSimulation.success) {
-          throw new Error(
-            `Execute simulation failed: ${executeSimulation.vm_status}`
-          );
-        }
+        // Prefer the exact wrapper gas. But if its prologue aborts (replica lag
+        // or a shifted queue), or the inner payload fails on-chain — which still
+        // resolves the proposal and advances the queue — `gas_used` only covers
+        // work up to the abort. Rather than block an executable proposal or
+        // under-fund it, fall back to the padded inner-payload estimate (the
+        // prologue can't abort that vault-as-sender simulation).
+        const maxGasAmount = executeSimulation.success
+          ? bufferEstimatedGas(Number(executeSimulation.gas_used))
+          : padEstimatedGas(
+              Number(simulation.data?.gas_used ?? executeSimulation.gas_used)
+            );
 
         return await buildTransaction({
           aptosConfig: aptos.config,
           sender: account.address,
           payload,
           options: {
-            maxGasAmount: bufferEstimatedGas(
-              Number(executeSimulation.gas_used)
-            ),
+            maxGasAmount,
             gasUnitPrice: Number(executeSimulation.gas_unit_price),
             expireTimestamp
           }

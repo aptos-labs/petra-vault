@@ -9,6 +9,7 @@ import {
   MultiSig,
   MultiSigTransactionPayload,
   Network,
+  TransactionPayloadEntryFunction,
   TransactionPayloadMultiSig
 } from '@aptos-labs/ts-sdk';
 import {
@@ -19,7 +20,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { createRemoveRejectedTransactionPayloadData } from '@/lib/payloads';
-import { bufferEstimatedGas } from '@/lib/gas';
+import { bufferEstimatedGas, padEstimatedGas } from '@/lib/gas';
 import useAnalytics from './useAnalytics';
 
 export interface BulkExecutableProposal {
@@ -115,14 +116,32 @@ export default function useBulkResolveProposals({
             }
           });
 
-          // A failed prologue (e.g. replica lag or a shifted queue) only reports
-          // the gas burned before the abort, which would set a uselessly small
-          // ceiling. Bail out so this proposal counts as a failure rather than
-          // submitting a transaction that would run out of gas.
-          if (!simulation.success) {
-            throw new Error(
-              `Execute simulation failed: ${simulation.vm_status}`
-            );
+          // Prefer the exact wrapper gas. But if its prologue aborts (replica
+          // lag or a shifted queue), or the inner payload fails on-chain — which
+          // still resolves the proposal and advances the queue — `gas_used` only
+          // covers work up to the abort. Rather than block resolving the queue
+          // or under-fund the tx, fall back to the padded inner-payload estimate
+          // (the prologue can't abort that vault-as-sender simulation).
+          let maxGasAmount: number;
+          if (simulation.success) {
+            maxGasAmount = bufferEstimatedGas(Number(simulation.gas_used));
+          } else {
+            const innerSimulation = await client.simulateTransaction({
+              network: { network },
+              transaction: await buildTransaction({
+                aptosConfig: aptos.config,
+                sender: vaultAddress,
+                payload: new TransactionPayloadEntryFunction(
+                  multisigPayload.transaction_payload
+                ),
+                options: { expireTimestamp }
+              }),
+              options: {
+                estimateGasUnitPrice: true,
+                estimateMaxGasAmount: true
+              }
+            });
+            maxGasAmount = padEstimatedGas(Number(innerSimulation.gas_used));
           }
 
           const transaction = await buildTransaction({
@@ -130,7 +149,7 @@ export default function useBulkResolveProposals({
             sender: account.address,
             payload: executePayload,
             options: {
-              maxGasAmount: bufferEstimatedGas(Number(simulation.gas_used)),
+              maxGasAmount,
               gasUnitPrice: Number(simulation.gas_unit_price),
               expireTimestamp
             }

@@ -20,6 +20,7 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { createRemoveRejectedTransactionPayloadData } from '@/lib/payloads';
+import { bufferEstimatedGas, padEstimatedGas } from '@/lib/gas';
 import useAnalytics from './useAnalytics';
 
 export interface BulkExecutableProposal {
@@ -81,7 +82,7 @@ export default function useBulkResolveProposals({
 
           // In ts-sdk v7 `transaction_payload` is `EntryFunction | Script`, but
           // multisig transaction payloads are always entry functions on-chain.
-          // getResolvablePrefix already filters these out; this narrows the type.
+          // getResolvablePrefix already filters these out; keep this as a guard.
           if (!(multisigPayload.transaction_payload instanceof EntryFunction)) {
             throw new Error(
               'Multisig transaction payload is not an entry function'
@@ -92,35 +93,65 @@ export default function useBulkResolveProposals({
             Math.floor(client.getServerTime() / 1000) +
             DEFAULT_TXN_EXP_SEC_FROM_NOW;
 
-          // Estimate gas by simulating the inner payload as the vault, mirroring
-          // the single-proposal execute flow in ActiveProposalProvider.
-          const simulationTransaction = await buildTransaction({
-            aptosConfig: aptos.config,
-            sender: vaultAddress,
-            payload: new TransactionPayloadEntryFunction(
-              multisigPayload.transaction_payload
-            ),
-            options: { expireTimestamp }
-          });
+          const executePayload = new TransactionPayloadMultiSig(
+            new MultiSig(AccountAddress.from(vaultAddress), multisigPayload)
+          );
 
+          // Simulate the actual multisig execute wrapper as the owner (prologue +
+          // inner payload + epilogue) so the gas ceiling reflects the real cost
+          // instead of estimating from the inner payload and padding. This
+          // proposal is at the front of the queue now that the previous one has
+          // been executed and awaited, so the multisig prologue passes.
           const simulation = await client.simulateTransaction({
             network: { network },
-            transaction: simulationTransaction,
+            transaction: await buildTransaction({
+              aptosConfig: aptos.config,
+              sender: account.address,
+              payload: executePayload,
+              options: { expireTimestamp }
+            }),
             options: {
               estimateGasUnitPrice: true,
               estimateMaxGasAmount: true
             }
           });
 
+          // Prefer the exact wrapper gas. But if its prologue aborts (replica
+          // lag or a shifted queue), or the inner payload fails on-chain — which
+          // still resolves the proposal and advances the queue — `gas_used` only
+          // covers work up to the abort. Rather than block resolving the queue
+          // or under-fund the tx, fall back to the padded inner-payload estimate
+          // (the prologue can't abort that vault-as-sender simulation).
+          let maxGasAmount: number;
+          if (simulation.success) {
+            maxGasAmount = bufferEstimatedGas(Number(simulation.gas_used));
+          } else {
+            const innerSimulation = await client.simulateTransaction({
+              network: { network },
+              transaction: await buildTransaction({
+                aptosConfig: aptos.config,
+                sender: vaultAddress,
+                payload: new TransactionPayloadEntryFunction(
+                  multisigPayload.transaction_payload
+                ),
+                options: { expireTimestamp }
+              }),
+              options: {
+                estimateGasUnitPrice: true,
+                estimateMaxGasAmount: true
+              }
+            });
+            maxGasAmount = padEstimatedGas(Number(innerSimulation.gas_used));
+          }
+
           const transaction = await buildTransaction({
             aptosConfig: aptos.config,
             sender: account.address,
-            payload: new TransactionPayloadMultiSig(
-              new MultiSig(AccountAddress.from(vaultAddress), multisigPayload)
-            ),
+            payload: executePayload,
             options: {
+              maxGasAmount,
               gasUnitPrice: Number(simulation.gas_unit_price),
-              expireTimestamp: Number(simulation.expiration_timestamp_secs)
+              expireTimestamp
             }
           });
 

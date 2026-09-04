@@ -173,15 +173,18 @@ export default function ProposalPage() {
       }
 
       if (action === 'execute') {
-        const transaction = await transactionPayload.refetch();
+        // React Query keeps the last successful data on a failed refetch, so
+        // check the fresh result isn't an error before submitting — otherwise a
+        // failed rebuild would resubmit a stale, possibly expired transaction.
+        const { data, isError } = await transactionPayload.refetch();
 
-        if (!transaction.data) {
+        if (isError || !data) {
           return toast.error(
             'There was an issue building your transaction, please try again.'
           );
         }
 
-        signAndSubmitPrimaryAction({ transaction: transaction.data });
+        signAndSubmitPrimaryAction({ transaction: data });
       }
     },
     [signAndSubmitPrimaryAction, transactionPayload, vaultAddress]
@@ -354,10 +357,24 @@ export default function ProposalPage() {
                         <div className="py-4 grid grid-cols-2 gap-2 text-sm text-muted-foreground font-display">
                           <span>Max Gas Amount:</span>
                           <span>
-                            {padEstimatedGas(Number(simulation.data.gas_used))}
+                            {transactionPayload.data
+                              ? Number(
+                                  transactionPayload.data.rawTransaction
+                                    .max_gas_amount
+                                )
+                              : padEstimatedGas(
+                                  Number(simulation.data.gas_used)
+                                )}
                           </span>
                           <span>Gas Unit Price:</span>
-                          <span>{simulation.data.gas_unit_price}</span>
+                          <span>
+                            {transactionPayload.data
+                              ? Number(
+                                  transactionPayload.data.rawTransaction
+                                    .gas_unit_price
+                                )
+                              : simulation.data.gas_unit_price}
+                          </span>
                           <span>Expiration Timestamp:</span>
                           <span>
                             {new Date(

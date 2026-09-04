@@ -1,13 +1,7 @@
-import { fetchCachedTransaction } from '@/actions/fetchCachedTransaction';
 import { getMultisigIndexerClient } from '@/operations';
 import { NetworkInfo, Order_By } from '@aptos-labs/js-pro';
 import { useClients } from '@aptos-labs/react';
-import {
-  AccountAddress,
-  Network,
-  TransactionResponseType,
-  UserTransactionResponse
-} from '@aptos-labs/ts-sdk';
+import { AccountAddress, Network } from '@aptos-labs/ts-sdk';
 import {
   DefaultError,
   InfiniteData,
@@ -22,20 +16,47 @@ const MULTISIG_EXECUTION_EVENTS_PAGE_SIZE = 15;
 export interface ExecutionEvent {
   type: 'success' | 'failed' | 'rejected';
   version: string;
+  /** Execution time in milliseconds since epoch, from the indexer. */
+  timestamp?: number;
   payload?: string;
   approvals?: number;
   rejections?: number;
+  /** The owner that executed the transaction, also its on-chain sender. */
   executor: AccountAddress;
   sequenceNumber: number;
-  transaction: UserTransactionResponse;
+}
+
+/**
+ * A single page of execution events. `rawCount` is the number of rows the
+ * indexer returned before per-row filtering, so pagination can decide whether
+ * more pages exist independently of how many rows survived.
+ */
+export interface MultisigExecutionEventsPage {
+  events: ExecutionEvent[];
+  rawCount: number;
+}
+
+/**
+ * Normalizes the indexer's transaction timestamp into milliseconds since epoch.
+ * The column may surface either raw microseconds (e.g. "1692491604335271") or an
+ * ISO-8601 string without a timezone (e.g. "2026-08-20T00:33:24.335271", which
+ * is UTC), so both are handled.
+ */
+function timestampToMillis(timestamp: unknown): number | undefined {
+  if (timestamp === null || timestamp === undefined) return undefined;
+  const value = String(timestamp);
+  if (/^\d+$/.test(value)) return Number(value) / 1000;
+  const normalized = /[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : `${value}Z`;
+  const millis = Date.parse(normalized);
+  return Number.isNaN(millis) ? undefined : millis;
 }
 
 interface UseMultisigExecutionEventsParameters
   extends Omit<
     UseInfiniteQueryOptions<
-      ExecutionEvent[],
+      MultisigExecutionEventsPage,
       DefaultError,
-      InfiniteData<ExecutionEvent[]>,
+      InfiniteData<MultisigExecutionEventsPage>,
       QueryKey,
       number
     >,
@@ -75,7 +96,7 @@ export default function useMultisigExecutionEvents({
         console.error(
           `Multisig indexer client is unavailable for this network: ${network}.`
         );
-        return [];
+        return { events: [], rawCount: 0 };
       }
 
       const { multisig_transactions: multisigTransactions } =
@@ -87,31 +108,11 @@ export default function useMultisigExecutionEvents({
           offset: pageParam
         });
 
-      const userTransactions = await Promise.all(
-        multisigTransactions.map((e) =>
-          fetchCachedTransaction(Number(e.version), resolvedNetwork)
-        )
-      );
-
-      return multisigTransactions.reduce((acc, multisigTransaction) => {
-        const userTransaction = userTransactions.find(
-          (t) =>
-            t.type === TransactionResponseType.User &&
-            t.version === multisigTransaction.version
-        );
-
-        if (
-          !userTransaction ||
-          userTransaction.type !== TransactionResponseType.User
-        ) {
-          return acc;
-        }
-
-        // Normalize the sender address to fix zero prefixed addresses
-        userTransaction.sender = AccountAddress.from(
-          userTransaction.sender
-        ).toString();
-
+      // Everything the UI renders (payload, timestamp, executor/sender, status)
+      // is already on the indexer row, so build the events directly instead of
+      // re-fetching each transaction from the fullnode — which is heavier and
+      // fails once old versions get pruned (HTTP 410).
+      const events = multisigTransactions.reduce((acc, multisigTransaction) => {
         let status: 'success' | 'failed' | 'rejected';
         switch (multisigTransaction.event_type) {
           case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::TransactionExecutionSucceeded`:
@@ -136,6 +137,7 @@ export default function useMultisigExecutionEvents({
         acc.push({
           type: status,
           version: multisigTransaction.version,
+          timestamp: timestampToMillis(multisigTransaction.timestamp),
           payload: multisigTransaction.transaction_payload as
             | string
             | undefined,
@@ -146,17 +148,20 @@ export default function useMultisigExecutionEvents({
             ? Number(multisigTransaction.num_rejections)
             : undefined,
           executor: AccountAddress.from(multisigTransaction.executor!),
-          sequenceNumber: Number(multisigTransaction.sequence_number),
-          transaction: userTransaction
+          sequenceNumber: Number(multisigTransaction.sequence_number)
         });
 
         return acc;
       }, [] as ExecutionEvent[]);
+
+      return { events, rawCount: multisigTransactions.length };
     },
     getPreviousPageParam: (_, __, ___, allPageParams) => allPageParams.at(-1),
+    // Decide whether more pages exist from the raw indexer row count, not the
+    // filtered `events` length. Rows can drop (unknown event types), and using
+    // the filtered length here would halt pagination early and hide history.
     getNextPageParam: (lastPage, _, lastPageParam) =>
-      lastPage.length === 0 ||
-      lastPage.length !== MULTISIG_EXECUTION_EVENTS_PAGE_SIZE
+      lastPage.rawCount < MULTISIG_EXECUTION_EVENTS_PAGE_SIZE
         ? undefined
         : lastPageParam + MULTISIG_EXECUTION_EVENTS_PAGE_SIZE
   });

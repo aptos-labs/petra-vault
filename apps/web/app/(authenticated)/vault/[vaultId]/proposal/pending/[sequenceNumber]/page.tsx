@@ -39,6 +39,7 @@ import Link from 'next/link';
 import useAnalytics from '@/hooks/useAnalytics';
 import ExecuteProposalConfirmationActions from '@/components/ExecuteProposalConfirmationActions';
 import { padEstimatedGas } from '@/lib/gas';
+import { getVaultExpirationTimestamp } from '@/lib/serverTime';
 import { TransactionParser } from '@aptos-labs/js-pro';
 
 export default function ProposalPage() {
@@ -115,7 +116,8 @@ export default function ProposalPage() {
           vaultAddress,
           sequenceNumber,
           approve
-        })
+        }),
+        options: { expireTimestamp: getVaultExpirationTimestamp() }
       }),
     [sequenceNumber, signAndSubmitSecondaryAction, vaultAddress]
   );
@@ -168,7 +170,8 @@ export default function ProposalPage() {
           data: {
             function: '0x1::multisig_account::execute_rejected_transaction',
             functionArguments: [vaultAddress]
-          }
+          },
+          options: { expireTimestamp: getVaultExpirationTimestamp() }
         });
       }
 

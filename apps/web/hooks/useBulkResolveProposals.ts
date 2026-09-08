@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react';
 import {
   AccountAddress,
   buildTransaction,
-  DEFAULT_TXN_EXP_SEC_FROM_NOW,
   Deserializer,
   EntryFunction,
   Hex,
@@ -21,6 +20,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { createRemoveRejectedTransactionPayloadData } from '@/lib/payloads';
 import { bufferEstimatedGas, padEstimatedGas } from '@/lib/gas';
+import { getVaultExpirationTimestamp } from '@/lib/serverTime';
 import useAnalytics from './useAnalytics';
 
 export interface BulkExecutableProposal {
@@ -89,9 +89,7 @@ export default function useBulkResolveProposals({
             );
           }
 
-          const expireTimestamp =
-            Math.floor(client.getServerTime() / 1000) +
-            DEFAULT_TXN_EXP_SEC_FROM_NOW;
+          const expireTimestamp = getVaultExpirationTimestamp();
 
           const executePayload = new TransactionPayloadMultiSig(
             new MultiSig(AccountAddress.from(vaultAddress), multisigPayload)
@@ -214,7 +212,8 @@ export default function useBulkResolveProposals({
             vaultAddress,
             finalSequenceNumber,
             count
-          })
+          }),
+          options: { expireTimestamp: getVaultExpirationTimestamp() }
         });
         await aptos.waitForTransaction({ transactionHash: hash });
 

@@ -7,6 +7,7 @@ import {
   createRangeVoteTransactionPayloadData,
   getContiguousRanges
 } from '@/lib/payloads';
+import { getVaultExpirationTimestamp } from '@/lib/serverTime';
 import useMultisigPendingTransactions from './useMultisigPendingTransactions';
 import useMultisigSequenceNumber from './useMultisigSequenceNumber';
 import useAnalytics from './useAnalytics';
@@ -87,7 +88,8 @@ export default function useBulkVoteProposals({
               startSequenceNumber: start,
               endSequenceNumber: end,
               approve
-            })
+            }),
+            options: { expireTimestamp: getVaultExpirationTimestamp() }
           });
           await aptos.waitForTransaction({ transactionHash: hash });
 

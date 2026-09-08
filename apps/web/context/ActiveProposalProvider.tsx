@@ -15,7 +15,6 @@ import { useQuery } from '@tanstack/react-query';
 import {
   AccountAddress,
   buildTransaction,
-  DEFAULT_TXN_EXP_SEC_FROM_NOW,
   Deserializer,
   EntryFunction,
   Hex,
@@ -28,6 +27,7 @@ import useMultisigSequenceNumber from '@/hooks/useMultisigSequenceNumber';
 import useMultisigPendingTransactions from '@/hooks/useMultisigPendingTransactions';
 import { getSimulationQueryErrors } from '@/lib/transactions';
 import { bufferEstimatedGas, padEstimatedGas } from '@/lib/gas';
+import { getVaultExpirationTimestamp } from '@/lib/serverTime';
 import { useMemo } from 'react';
 
 export const [ActiveProposalProvider, useActiveProposal] = constate(
@@ -107,11 +107,7 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
 
         return await buildTransaction({
           aptosConfig: aptos.config,
-          options: {
-            expireTimestamp:
-              Math.floor(client.getServerTime() / 1000) +
-              DEFAULT_TXN_EXP_SEC_FROM_NOW
-          },
+          options: { expireTimestamp: getVaultExpirationTimestamp() },
           sender: vaultAddress,
           payload: new TransactionPayloadEntryFunction(
             multisigPayload.transaction_payload
@@ -154,9 +150,7 @@ export const [ActiveProposalProvider, useActiveProposal] = constate(
           )
         );
 
-        const expireTimestamp =
-          Math.floor(client.getServerTime() / 1000) +
-          DEFAULT_TXN_EXP_SEC_FROM_NOW;
+        const expireTimestamp = getVaultExpirationTimestamp();
 
         const payload = new TransactionPayloadMultiSig(
           new MultiSig(AccountAddress.from(vaultAddress), multisigPayload)

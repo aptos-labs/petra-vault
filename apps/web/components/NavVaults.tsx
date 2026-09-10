@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useParams, useRouter } from 'next/navigation';
 import { useVaults } from '@/context/useVaults';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createVaultId, parseVaultId } from '@/lib/vaults';
 import { truncateAddress } from '@aptos-labs/wallet-adapter-react';
 import { AptosAvatar } from 'aptos-avatars-react';
@@ -22,11 +22,14 @@ import { Network } from '@aptos-labs/ts-sdk';
 import {
   CaretSortIcon,
   CheckCircledIcon,
+  MagnifyingGlassIcon,
   PlusIcon
 } from '@radix-ui/react-icons';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { Vault } from '@/lib/types/vaults';
 
 export function NavVaults() {
   const router = useRouter();
@@ -34,6 +37,10 @@ export function NavVaults() {
   const { vaultId } = useParams();
 
   const { vaults } = useVaults();
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const parsedVaultId = parseVaultId(decodeURIComponent(vaultId as string));
 
@@ -48,10 +55,44 @@ export function NavVaults() {
     );
   }, [vaults, parsedVaultId]);
 
+  // The menu focuses its content when it opens, so take focus back on the next
+  // frame to let the list be filtered by typing right away.
+  useEffect(() => {
+    if (!isOpen) return;
+    const frame = requestAnimationFrame(() => searchInputRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [isOpen]);
+
+  const filteredVaults = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return vaults;
+    return vaults.filter(
+      (vault) =>
+        vault.name.toLowerCase().includes(query) ||
+        vault.address.toString().toLowerCase().includes(query)
+    );
+  }, [vaults, search]);
+
+  const isVaultSelected = (vault: Vault) =>
+    !!selectedVault?.address.equals(vault.address) &&
+    selectedVault?.network === vault.network;
+
+  const handleSelectVault = (vault: Vault) => {
+    setIsOpen(false);
+    if (isVaultSelected(vault)) return;
+    router.push(`/vault/${createVaultId(vault)}`);
+  };
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        <DropdownMenu
+          open={isOpen}
+          onOpenChange={(open) => {
+            setIsOpen(open);
+            if (!open) setSearch('');
+          }}
+        >
           <DropdownMenuTrigger
             asChild
             data-testid="nav-vaults-dropdown-menu-trigger"
@@ -89,51 +130,75 @@ export function NavVaults() {
             <div className="p-2 text-sm text-muted-foreground w-full">
               Select a Petra Vault
             </div>
-            <div className="flex max-h-64 flex-col gap-1 overflow-y-auto overflow-x-hidden">
-              {vaults.map((vault) => {
-                const isSelected =
-                  selectedVault?.address.equals(vault.address) &&
-                  selectedVault?.network === vault.network;
-                return (
-                  <DropdownMenuItem
-                    key={`${vault.address.toString()}-${vault.network}`}
-                    onClick={() => {
-                      if (isSelected) return;
-                      router.push(`/vault/${createVaultId(vault)}`);
+            {vaults.length > 0 && (
+              <div className="px-1 pb-1">
+                <div className="relative">
+                  <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    ref={searchInputRef}
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    onKeyDown={(event) => {
+                      // The menu's typeahead would otherwise swallow the keys
+                      // typed here to move focus between vaults instead.
+                      if (event.key.length === 1) event.stopPropagation();
+                      if (event.key === 'Enter' && filteredVaults[0]) {
+                        handleSelectVault(filteredVaults[0]);
+                      }
                     }}
-                    className={cn(
-                      'flex p-2',
-                      isSelected && 'bg-secondary hover:!bg-secondary'
-                    )}
-                    data-testid={`nav-vault-${vault.address.toString()}-${vault.network}`}
-                  >
-                    <AptosAvatar value={vault.address.toString()} size={32} />
-                    <div className="flex leading-none min-w-56">
-                      <div className="flex flex-col gap-0.5">
-                        <div className="flex items-end gap-1">
-                          <span className="font-semibold font-display">
-                            {vault.name}
-                          </span>
-                          {vault.network !== Network.MAINNET && (
-                            <span className="capitalize text-xs opacity-30">
-                              {vault.network}
+                    placeholder="Search vaults"
+                    className="h-8 pl-8"
+                    data-testid="nav-vaults-search-input"
+                  />
+                </div>
+              </div>
+            )}
+            {search && filteredVaults.length === 0 ? (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                No vaults found
+              </div>
+            ) : (
+              <div className="flex max-h-64 flex-col gap-1 overflow-y-auto overflow-x-hidden">
+                {filteredVaults.map((vault) => {
+                  const isSelected = isVaultSelected(vault);
+                  return (
+                    <DropdownMenuItem
+                      key={`${vault.address.toString()}-${vault.network}`}
+                      onClick={() => handleSelectVault(vault)}
+                      className={cn(
+                        'flex p-2',
+                        isSelected && 'bg-secondary hover:!bg-secondary'
+                      )}
+                      data-testid={`nav-vault-${vault.address.toString()}-${vault.network}`}
+                    >
+                      <AptosAvatar value={vault.address.toString()} size={32} />
+                      <div className="flex leading-none min-w-56">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-end gap-1">
+                            <span className="font-semibold font-display">
+                              {vault.name}
                             </span>
+                            {vault.network !== Network.MAINNET && (
+                              <span className="capitalize text-xs opacity-30">
+                                {vault.network}
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-muted-foreground">
+                            {truncateAddress(vault.address.toString())}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 ml-auto">
+                          {isSelected && (
+                            <CheckCircledIcon className="size-4 text-green-700" />
                           )}
                         </div>
-                        <span className="text-muted-foreground">
-                          {truncateAddress(vault.address.toString())}
-                        </span>
                       </div>
-                      <div className="flex items-center gap-2 ml-auto">
-                        {isSelected && (
-                          <CheckCircledIcon className="size-4 text-green-700" />
-                        )}
-                      </div>
-                    </div>
-                  </DropdownMenuItem>
-                );
-              })}
-            </div>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </div>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild className="hover:!bg-transparent">
               <Link href="/onboarding" className="w-full">

@@ -89,49 +89,51 @@ export function NavVaults() {
             <div className="p-2 text-sm text-muted-foreground w-full">
               Select a Petra Vault
             </div>
-            {vaults.map((vault) => {
-              const isSelected =
-                selectedVault?.address.equals(vault.address) &&
-                selectedVault?.network === vault.network;
-              return (
-                <DropdownMenuItem
-                  key={`${vault.address.toString()}-${vault.network}`}
-                  onClick={() => {
-                    if (isSelected) return;
-                    router.push(`/vault/${createVaultId(vault)}`);
-                  }}
-                  className={cn(
-                    'flex p-2',
-                    isSelected && 'bg-secondary hover:!bg-secondary'
-                  )}
-                  data-testid={`nav-vault-${vault.address.toString()}-${vault.network}`}
-                >
-                  <AptosAvatar value={vault.address.toString()} size={32} />
-                  <div className="flex leading-none min-w-56">
-                    <div className="flex flex-col gap-0.5">
-                      <div className="flex items-end gap-1">
-                        <span className="font-semibold font-display">
-                          {vault.name}
-                        </span>
-                        {vault.network !== Network.MAINNET && (
-                          <span className="capitalize text-xs opacity-30">
-                            {vault.network}
+            <div className="flex max-h-64 flex-col gap-1 overflow-y-auto overflow-x-hidden">
+              {vaults.map((vault) => {
+                const isSelected =
+                  selectedVault?.address.equals(vault.address) &&
+                  selectedVault?.network === vault.network;
+                return (
+                  <DropdownMenuItem
+                    key={`${vault.address.toString()}-${vault.network}`}
+                    onClick={() => {
+                      if (isSelected) return;
+                      router.push(`/vault/${createVaultId(vault)}`);
+                    }}
+                    className={cn(
+                      'flex p-2',
+                      isSelected && 'bg-secondary hover:!bg-secondary'
+                    )}
+                    data-testid={`nav-vault-${vault.address.toString()}-${vault.network}`}
+                  >
+                    <AptosAvatar value={vault.address.toString()} size={32} />
+                    <div className="flex leading-none min-w-56">
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-end gap-1">
+                          <span className="font-semibold font-display">
+                            {vault.name}
                           </span>
+                          {vault.network !== Network.MAINNET && (
+                            <span className="capitalize text-xs opacity-30">
+                              {vault.network}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-muted-foreground">
+                          {truncateAddress(vault.address.toString())}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 ml-auto">
+                        {isSelected && (
+                          <CheckCircledIcon className="size-4 text-green-700" />
                         )}
                       </div>
-                      <span className="text-muted-foreground">
-                        {truncateAddress(vault.address.toString())}
-                      </span>
                     </div>
-                    <div className="flex items-center gap-2 ml-auto">
-                      {isSelected && (
-                        <CheckCircledIcon className="size-4 text-green-700" />
-                      )}
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              );
-            })}
+                  </DropdownMenuItem>
+                );
+              })}
+            </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild className="hover:!bg-transparent">
               <Link href="/onboarding" className="w-full">

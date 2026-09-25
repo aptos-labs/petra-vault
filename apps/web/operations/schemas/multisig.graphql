@@ -17,6 +17,7 @@ query getMultisigTransactions(
     num_approvals
     num_rejections
     sequence_number
+    timestamp
     transaction_payload
     version
   }

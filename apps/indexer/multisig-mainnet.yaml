@@ -1,22 +1,42 @@
 spec_identifier:
   spec_creator: shepherd@aptoslabs.com
   spec_name: remapping-processor
-  spec_version: 0.0.10
+  spec_version: "0.0.21"
 common_config:
   network: mainnet
   starting_version: 0
   starting_version_override: null
 custom_config:
   transaction_metadata:
-    timestamp: []
+    timestamp:
+      - table: multisig_transactions
+        column: timestamp
     version:
       - table: multisig_transactions
         column: version
       - table: multisig_owner_activities
         column: version
+      - table: multisig_creation_candidates
+        column: version
     epoch: []
     block_height: []
+    hash: []
   events:
+    # Payload mappings enrich event-created rows; they do not filter ingestion.
+    0x1::transaction_fee::FeeStatement:
+      event_fields:
+        $.total_charge_gas_units:
+          - table: multisig_creation_candidates
+            column: total_charge_gas_units
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address: []
+        event_type:
+          - table: multisig_creation_candidates
+            column: fee_event_type
+        event_index: []
+      constant_values: []
     0x1::multisig_account::AddOwners:
       event_fields:
         $.multisig_account:
@@ -263,11 +283,16 @@ custom_config:
             column: event_type
         event_index: []
       constant_values: []
-  payload: {}
+  payload:
+    # Geomi's function ABI lookup requires the full address.
+    0x0000000000000000000000000000000000000000000000000000000000000001::multisig_account::create_with_owners:
+      '0':
+        - table: multisig_creation_candidates
+          column: owners
   db_schema:
     multisig_transactions:
       version:
-        is_index: false
+        is_index: true
         is_nullable: false
         is_option: false
         is_primary_key: false
@@ -276,6 +301,16 @@ custom_config:
         column_type:
           type: transaction_metadata
           column_type: version
+      timestamp:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: transaction_metadata
+          column_type: timestamp
       executor:
         is_index: false
         is_nullable: false
@@ -287,15 +322,15 @@ custom_config:
           type: move_type
           column_type: address
       multisig_account:
-        is_index: false
+        is_index: true
         is_nullable: false
         is_option: false
         is_primary_key: true
         is_vec: false
         default_value: null
         column_type:
-          type: event_metadata
-          column_type: account_address
+          type: move_type
+          column_type: address
       num_rejections:
         is_index: false
         is_nullable: true
@@ -348,7 +383,7 @@ custom_config:
           column_type: string
     multisig_owner_activities:
       version:
-        is_index: false
+        is_index: true
         is_nullable: false
         is_option: false
         is_primary_key: true
@@ -365,10 +400,10 @@ custom_config:
         is_vec: false
         default_value: null
         column_type:
-          type: event_metadata
-          column_type: account_address
+          type: move_type
+          column_type: address
       owners_added:
-        is_index: false
+        is_index: true
         is_nullable: true
         is_option: false
         is_primary_key: false
@@ -388,7 +423,7 @@ custom_config:
           type: event_metadata
           column_type: event_type
       owners_removed:
-        is_index: false
+        is_index: true
         is_nullable: true
         is_option: false
         is_primary_key: false
@@ -398,11 +433,53 @@ custom_config:
           type: move_type
           column_type: address
       owner_vote:
-        is_index: false
+        is_index: true
         is_nullable: true
         is_option: false
         is_primary_key: false
         is_vec: false
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: address
+    multisig_creation_candidates:
+      version:
+        is_index: true
+        is_nullable: false
+        is_option: false
+        is_primary_key: true
+        is_vec: false
+        default_value: null
+        column_type:
+          type: transaction_metadata
+          column_type: version
+      fee_event_type:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: event_metadata
+          column_type: event_type
+      total_charge_gas_units:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: move_type
+          column_type: u64
+      owners:
+        is_index: true
+        # Unrelated fee rows have no matching payload argument.
+        is_nullable: true
+        is_option: false
+        is_primary_key: false
+        is_vec: true
         default_value: null
         column_type:
           type: move_type

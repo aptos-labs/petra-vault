@@ -1,0 +1,14 @@
+query InspectProbeSchema {
+  __schema {
+    queryType {
+      fields {
+        name
+      }
+    }
+  }
+  __type(name: "multisig_creation_probe") {
+    fields {
+      name
+    }
+  }
+}

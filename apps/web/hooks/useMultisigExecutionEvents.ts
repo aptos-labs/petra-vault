@@ -64,7 +64,8 @@ export default function useMultisigExecutionEvents({
   return useInfiniteQuery({
     ...options,
     enabled,
-    queryKey: ['multisig-execution-events', address, network],
+    // Persisted array pages cannot be read as { events, rawCount } pages.
+    queryKey: ['multisig-execution-events', address, network, 'v2'],
     initialPageParam: 0,
     queryFn: async ({ pageParam = 0 }) => {
       const resolvedNetwork = network?.network ?? aptos.config.network;

@@ -1,0 +1,20 @@
+query VaultDiscoveryForOwner(
+  $owner: String! = "0xc476707d8a2d5c00242096332855ab0968225cbdc1cce0e25532b1df33f98eb0"
+  $afterVersion: bigint! = "0"
+  $limit: Int! = 100
+) {
+  target_creation: multisig_creation_probe(
+    where: { version: { _eq: "7350673760" }, owners: { _contains: [$owner] } }
+  ) {
+    version
+    owners
+  }
+  creation_candidates: multisig_creation_probe(
+    where: { owners: { _contains: [$owner] }, version: { _gt: $afterVersion } }
+    order_by: { version: asc }
+    limit: $limit
+  ) {
+    version
+    owners
+  }
+}

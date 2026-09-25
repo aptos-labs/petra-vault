@@ -1,0 +1,83 @@
+# Reproduction only: Geomi review drops payload and owners and reports an error.
+# The accepted deployment has fee data but no owners column. See README.md.
+# This has no automatic stop version. Stop the probe after inspecting the results.
+spec_identifier:
+  spec_creator: 'shepherd@aptoslabs.com'
+  spec_name: 'remapping-processor'
+  spec_version: '0.0.21'
+common_config:
+  network: 'mainnet'
+  starting_version: 7345859291
+  starting_version_override: null
+custom_config:
+  transaction_metadata:
+    timestamp: []
+    version:
+      - table: 'multisig_creation_probe'
+        column: 'version'
+    epoch: []
+    block_height: []
+    hash: []
+  events:
+    0x1::transaction_fee::FeeStatement:
+      event_fields:
+        $.total_charge_gas_units:
+          - table: 'multisig_creation_probe'
+            column: 'total_charge_gas_units'
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address: []
+        event_type:
+          - table: 'multisig_creation_probe'
+            column: 'fee_event_type'
+        event_index: []
+      constant_values: []
+  payload:
+    0x1::multisig_account::create_with_owners:
+      '0':
+        - table: 'multisig_creation_probe'
+          column: 'owners'
+  db_schema:
+    multisig_creation_probe:
+      version:
+        is_index: true
+        is_nullable: false
+        is_option: false
+        is_primary_key: true
+        is_vec: false
+        default_value: null
+        column_type:
+          type: 'transaction_metadata'
+          column_type: 'version'
+      fee_event_type:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: 'event_metadata'
+          column_type: 'event_type'
+      total_charge_gas_units:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: 'move_type'
+          column_type: 'u64'
+      owners:
+        is_index: true
+        # Preserve unmatched rows so the probe reveals whether FeeStatement is global.
+        is_nullable: true
+        is_option: false
+        is_primary_key: false
+        is_vec: true
+        default_value: null
+        column_type:
+          type: 'move_type'
+          column_type: 'address'

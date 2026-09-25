@@ -1,0 +1,33 @@
+query MultisigCreationProbe {
+  creation: multisig_creation_probe(where: { version: { _eq: "7345859301" } }) {
+    version
+    owners
+    fee_event_type
+    total_charge_gas_units
+  }
+  owner_lookup: multisig_creation_probe(
+    where: {
+      version: { _gte: "7345859291", _lte: "7345859311" }
+      owners: {
+        _contains: [
+          "0xc476707d8a2d5c00242096332855ab0968225cbdc1cce0e25532b1df33f98eb0"
+        ]
+      }
+    }
+    order_by: { version: asc }
+    limit: 100
+  ) {
+    version
+    owners
+  }
+  window: multisig_creation_probe(
+    where: { version: { _gte: "7345859291", _lte: "7345859311" } }
+    order_by: { version: asc }
+    limit: 100
+  ) {
+    version
+    owners
+    fee_event_type
+    total_charge_gas_units
+  }
+}

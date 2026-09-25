@@ -2,12 +2,7 @@
 
 import { ExecutionEvent } from '@/hooks/useMultisigExecutionEvents';
 import { getEntryFunctionDisplayName } from '@/lib/displayNames';
-import {
-  EntryFunctionPayloadResponse,
-  MultisigPayloadResponse,
-  Network,
-  UserTransactionResponse
-} from '@aptos-labs/ts-sdk';
+import { EntryFunctionPayloadResponse, Network } from '@aptos-labs/ts-sdk';
 import {
   CheckCircledIcon,
   CheckIcon,
@@ -25,67 +20,63 @@ import AddressDisplay from './AddressDisplay';
 import { deserializeMultisigTransactionPayload } from '@/lib/payloads';
 
 interface TransactionRowProps {
-  transaction: UserTransactionResponse;
+  executionEvent: ExecutionEvent;
   network?: Network;
-  executionEvent?: ExecutionEvent;
 }
 
 export default function TransactionRow({
-  transaction,
-  network,
-  executionEvent
+  executionEvent,
+  network
 }: TransactionRowProps) {
-  let transactionPayload:
-    | Pick<EntryFunctionPayloadResponse, 'function'>
-    | undefined;
+  const sender = executionEvent.executor.toString();
 
-  if (transaction.payload.type === 'entry_function_payload') {
-    transactionPayload = transaction.payload as EntryFunctionPayloadResponse;
-  }
+  const title = useMemo(() => {
+    if (executionEvent.payload) {
+      const payload = deserializeMultisigTransactionPayload(
+        executionEvent.payload
+      ) as Pick<EntryFunctionPayloadResponse, 'function'>;
+      if (payload?.function)
+        return getEntryFunctionDisplayName(payload.function);
+    }
 
-  if (transaction.payload.type === 'multisig_payload') {
-    transactionPayload = (transaction.payload as MultisigPayloadResponse)
-      .transaction_payload;
-  }
+    // Rejected executions carry no payload, so fall back to a status label.
+    if (executionEvent.type === 'rejected') return 'Rejected transaction';
 
-  if (!transactionPayload && executionEvent?.payload) {
-    transactionPayload = deserializeMultisigTransactionPayload(
-      executionEvent.payload
-    ) as Pick<EntryFunctionPayloadResponse, 'function'>;
-  }
+    return undefined;
+  }, [executionEvent]);
 
   const statusTextColor = useMemo(() => {
-    if (executionEvent?.type === 'success') return 'text-green-700';
-    if (executionEvent?.type === 'failed') return 'text-yellow-700';
-    if (executionEvent?.type === 'rejected')
+    if (executionEvent.type === 'success') return 'text-green-700';
+    if (executionEvent.type === 'failed') return 'text-yellow-700';
+    if (executionEvent.type === 'rejected')
       return 'text-destructive-foreground';
     return 'text-muted-foreground';
   }, [executionEvent]);
 
   const statusBackgroundColor = useMemo(() => {
-    if (executionEvent?.type === 'success') return 'bg-green-500/20';
-    if (executionEvent?.type === 'failed') return 'bg-yellow-500/20';
-    if (executionEvent?.type === 'rejected') return 'bg-destructive/20';
+    if (executionEvent.type === 'success') return 'bg-green-500/20';
+    if (executionEvent.type === 'failed') return 'bg-yellow-500/20';
+    if (executionEvent.type === 'rejected') return 'bg-destructive/20';
     return 'bg-accent';
   }, [executionEvent]);
 
   const statusIcon = useMemo(() => {
-    if (executionEvent?.type === 'success')
+    if (executionEvent.type === 'success')
       return <CheckIcon className="size-4" />;
-    if (executionEvent?.type === 'failed')
+    if (executionEvent.type === 'failed')
       return <ExclamationTriangleIcon className="size-4" />;
-    if (executionEvent?.type === 'rejected')
+    if (executionEvent.type === 'rejected')
       return <Cross1Icon className="size-4" />;
     return <GlobeIcon className="size-4" />;
   }, [executionEvent]);
 
-  if (!transactionPayload) return null;
+  if (!title) return null;
 
   return (
     <motion.a
       href={getExplorerUrl({
         network: network,
-        path: `txn/${transaction.version}`
+        path: `txn/${executionEvent.version}`
       })}
       target="_blank"
       rel="noopener noreferrer"
@@ -103,12 +94,12 @@ export default function TransactionRow({
 
       <div className="flex flex-col flex-1 px-2 md:px-4 py-1 overflow-hidden">
         <p className="text-xs md:text-sm font-display w-full font-semibold truncate">
-          {getEntryFunctionDisplayName(transactionPayload.function)}
+          {title}
         </p>
         <p className="text-xs text-muted-foreground w-full truncate">
-          {transaction.timestamp && (
+          {executionEvent.timestamp && (
             <span className="text-xs">
-              {new Date(Number(transaction.timestamp) / 1000).toLocaleString()}
+              {new Date(executionEvent.timestamp).toLocaleString()}
             </span>
           )}
         </p>
@@ -117,23 +108,23 @@ export default function TransactionRow({
       <div className="flex text-sm py-1 gap-4 w-fit">
         <div className="items-center hidden sm:flex">
           <div className="flex items-center gap-2">
-            <AptosAvatar value={transaction.sender} size={20} />
+            <AptosAvatar value={sender} size={20} />
             <p className="font-display text-xs md:text-sm font-medium ml-1">
-              <AddressDisplay address={transaction.sender} />
+              <AddressDisplay address={sender} />
             </p>
           </div>
         </div>
 
         <div className="flex items-center text-xs md:text-sm">
-          {executionEvent?.approvals !== undefined ? (
+          {executionEvent.approvals !== undefined ? (
             <div className="flex items-center gap-2 text-green-700">
-              <p>{executionEvent?.approvals}</p>
+              <p>{executionEvent.approvals}</p>
               <CheckCircledIcon className="md:size-4" />
             </div>
           ) : null}
-          {executionEvent?.rejections !== undefined ? (
+          {executionEvent.rejections !== undefined ? (
             <div className="flex items-center gap-2 text-red-700">
-              <p>{executionEvent?.rejections}</p>
+              <p>{executionEvent.rejections}</p>
               <CrossCircledIcon className="size-4" />
             </div>
           ) : null}

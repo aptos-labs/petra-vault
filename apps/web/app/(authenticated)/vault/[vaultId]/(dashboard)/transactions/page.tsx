@@ -36,25 +36,17 @@ export default function VaultTransactionsPage() {
     if (!executionEvents) return undefined;
 
     // Sort transactions by timestamp in descending order (newest first)
-    const sortedEvents = executionEvents.pages.flat().sort((a, b) => {
-      const timestampA = a.transaction?.timestamp
-        ? Number(a.transaction.timestamp) / 1000
-        : 0;
-      const timestampB = b.transaction?.timestamp
-        ? Number(b.transaction.timestamp) / 1000
-        : 0;
-      return timestampB - timestampA;
-    });
+    const sortedEvents = executionEvents.pages
+      .flatMap((page) => page.events)
+      .sort((a, b) => (b.timestamp ?? 0) - (a.timestamp ?? 0));
 
     // Group by month
     const groupedByMonth: Record<string, ExecutionEvent[]> = {};
 
     sortedEvents.forEach((event) => {
-      if (!event.transaction?.timestamp) return;
+      if (!event.timestamp) return;
 
-      const date = new Date(
-        Math.floor(Number(event.transaction.timestamp) / 1000)
-      );
+      const date = new Date(event.timestamp);
       const monthYear = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
 
       if (!groupedByMonth[monthYear]) {
@@ -153,7 +145,6 @@ export default function VaultTransactionsPage() {
                           }}
                         >
                           <TransactionRow
-                            transaction={event.transaction}
                             executionEvent={event}
                             network={network}
                           />

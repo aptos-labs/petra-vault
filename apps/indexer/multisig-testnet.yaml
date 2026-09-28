@@ -1,14 +1,16 @@
 spec_identifier:
   spec_creator: shepherd@aptoslabs.com
   spec_name: remapping-processor
-  spec_version: 0.0.10
+  spec_version: "0.0.21"
 common_config:
   network: testnet
   starting_version: 4500665800
   starting_version_override: null
 custom_config:
   transaction_metadata:
-    timestamp: []
+    timestamp:
+      - table: multisig_transactions
+        column: timestamp
     version:
       - table: multisig_transactions
         column: version
@@ -16,6 +18,7 @@ custom_config:
         column: version
     epoch: []
     block_height: []
+    hash: []
   events:
     0x1::multisig_account::AddOwners:
       event_fields:
@@ -276,6 +279,16 @@ custom_config:
         column_type:
           type: transaction_metadata
           column_type: version
+      timestamp:
+        is_index: false
+        is_nullable: false
+        is_option: false
+        is_primary_key: false
+        is_vec: false
+        default_value: null
+        column_type:
+          type: transaction_metadata
+          column_type: timestamp
       executor:
         is_index: false
         is_nullable: false
@@ -294,8 +307,8 @@ custom_config:
         is_vec: false
         default_value: null
         column_type:
-          type: event_metadata
-          column_type: account_address
+          type: move_type
+          column_type: address
       num_rejections:
         is_index: false
         is_nullable: true
@@ -365,8 +378,8 @@ custom_config:
         is_vec: false
         default_value: null
         column_type:
-          type: event_metadata
-          column_type: account_address
+          type: move_type
+          column_type: address
       owners_added:
         is_index: false
         is_nullable: true

@@ -6,6 +6,7 @@ Petra Vault uses the No-Code Indexing (NCI) service from [Geomi](https://geomi.d
 
 - [Setup Instructions](#setup-instructions)
 - [Environment Configuration](#environment-configuration)
+- [Initial-owner Discovery on Mainnet](#initial-owner-discovery-on-mainnet)
 
 ## Setup Instructions
 
@@ -63,3 +64,52 @@ NEXT_PUBLIC_MULTISIG_INDEXER_TESTNET_ENDPOINT="https://api.testnet.aptoslabs.com
 | `NEXT_PUBLIC_MULTISIG_INDEXER_MAINNET_ENDPOINT` | GraphQL endpoint for mainnet  | `https://api.mainnet.aptoslabs.com/nocode/v1/api/[id]/v1/graphql` |
 | `NEXT_PUBLIC_MULTISIG_INDEXER_TESTNET_API_KEY`  | API key for testnet processor | `AG-...`                                                          |
 | `NEXT_PUBLIC_MULTISIG_INDEXER_TESTNET_ENDPOINT` | GraphQL endpoint for testnet  | `https://api.testnet.aptoslabs.com/nocode/v1/api/[id]/v1/graphql` |
+
+## Initial-owner Discovery on Mainnet
+
+`multisig-mainnet.yaml` adds `multisig_creation_candidates` alongside the existing
+transaction and owner-activity tables. It maps argument `0` of
+`0x1::multisig_account::create_with_owners` into a nullable `owners` address array.
+The YAML uses the full framework address because Geomi's editor otherwise drops
+the payload mapping during its function ABI lookup.
+
+The mapping was tested in `multisig-creation-probe-v2` with Mainnet creation
+versions `7345859301` and `7350673760`. Both were returned for the invited owner
+once indexing reached their versions. The production table uses the same mappings
+under the name `multisig_creation_candidates`.
+
+After deploying, indexing the required history, and exposing the new table to the
+mobile API key, query candidate versions for the active wallet:
+
+```graphql
+query VaultCreationCandidates(
+  $owner: String!
+  $afterVersion: bigint! = "0"
+  $limit: Int! = 100
+) {
+  multisig_creation_candidates(
+    where: { owners: { _contains: [$owner] }, version: { _gt: $afterVersion } }
+    order_by: { version: asc }
+    limit: $limit
+  ) {
+    version
+    owners
+  }
+}
+```
+
+For each subsequent page, use the last returned version as `afterVersion` until
+the result is empty. Mobile integration is still required: merge these versions
+with existing creator-history and owner-event discovery, resolve successful
+transactions into vault addresses, deduplicate them, and verify current ownership.
+The query returns creation candidates, not vault addresses or current membership.
+Argument `0` contains additional owners only; it excludes the creator and does
+not cover other creation functions or custom wrappers.
+
+**Deployment remains a separate step.** The processor needs `FeeStatement` events
+to create rows before payload enrichment. This stores a row for every matching
+fee event, including unrelated transactions with null owners and failed creation
+calls. Filtering the GraphQL query does not reduce ingestion. Plan ingestion cost
+and backfill before deployment; the YAML's `starting_version: 0` requests history
+from genesis. The promoted config has been checked locally, but has not been
+deployed or verified using the mobile API key.

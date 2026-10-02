@@ -1,7 +1,7 @@
 spec_identifier:
   spec_creator: shepherd@aptoslabs.com
   spec_name: remapping-processor
-  spec_version: "0.0.21"
+  spec_version: '0.0.21'
 common_config:
   network: testnet
   starting_version: 4500665800
@@ -20,6 +20,128 @@ custom_config:
     block_height: []
     hash: []
   events:
+    # Keep legacy *Event mappings first. Geomi's editor uses the last mapping
+    # to choose a shared column's type; module events must set Move addresses.
+    0x1::multisig_account::AddOwnersEvent:
+      event_fields:
+        $.owners_added:
+          - table: multisig_owner_activities
+            column: owners_added
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_owner_activities
+            column: multisig_account
+        event_type:
+          - table: multisig_owner_activities
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::ExecuteRejectedTransactionEvent:
+      event_fields:
+        $.executor:
+          - table: multisig_transactions
+            column: executor
+        $.num_rejections:
+          - table: multisig_transactions
+            column: num_rejections
+        $.sequence_number:
+          - table: multisig_transactions
+            column: sequence_number
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_transactions
+            column: multisig_account
+        event_type:
+          - table: multisig_transactions
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::RemoveOwnersEvent:
+      event_fields:
+        $.owners_removed:
+          - table: multisig_owner_activities
+            column: owners_removed
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_owner_activities
+            column: multisig_account
+        event_type:
+          - table: multisig_owner_activities
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::TransactionExecutionFailedEvent:
+      event_fields:
+        $.executor:
+          - table: multisig_transactions
+            column: executor
+        $.num_approvals:
+          - table: multisig_transactions
+            column: num_approvals
+        $.sequence_number:
+          - table: multisig_transactions
+            column: sequence_number
+        $.transaction_payload:
+          - table: multisig_transactions
+            column: transaction_payload
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_transactions
+            column: multisig_account
+        event_type:
+          - table: multisig_transactions
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::TransactionExecutionSucceededEvent:
+      event_fields:
+        $.executor:
+          - table: multisig_transactions
+            column: executor
+        $.num_approvals:
+          - table: multisig_transactions
+            column: num_approvals
+        $.sequence_number:
+          - table: multisig_transactions
+            column: sequence_number
+        $.transaction_payload:
+          - table: multisig_transactions
+            column: transaction_payload
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_transactions
+            column: multisig_account
+        event_type:
+          - table: multisig_transactions
+            column: event_type
+        event_index: []
+      constant_values: []
+    0x1::multisig_account::VoteEvent:
+      event_fields:
+        $.owner:
+          - table: multisig_owner_activities
+            column: owner_vote
+      event_metadata:
+        sequence_number: []
+        creation_number: []
+        account_address:
+          - table: multisig_owner_activities
+            column: multisig_account
+        event_type:
+          - table: multisig_owner_activities
+            column: event_type
+        event_index: []
+      constant_values: []
     0x1::multisig_account::AddOwners:
       event_fields:
         $.multisig_account:
@@ -32,22 +154,6 @@ custom_config:
         sequence_number: []
         creation_number: []
         account_address: []
-        event_type:
-          - table: multisig_owner_activities
-            column: event_type
-        event_index: []
-      constant_values: []
-    0x1::multisig_account::AddOwnersEvent:
-      event_fields:
-        $.owners_added:
-          - table: multisig_owner_activities
-            column: owners_added
-      event_metadata:
-        sequence_number: []
-        creation_number: []
-        account_address:
-          - table: multisig_owner_activities
-            column: multisig_account
         event_type:
           - table: multisig_owner_activities
             column: event_type
@@ -76,28 +182,6 @@ custom_config:
             column: event_type
         event_index: []
       constant_values: []
-    0x1::multisig_account::ExecuteRejectedTransactionEvent:
-      event_fields:
-        $.executor:
-          - table: multisig_transactions
-            column: executor
-        $.num_rejections:
-          - table: multisig_transactions
-            column: num_rejections
-        $.sequence_number:
-          - table: multisig_transactions
-            column: sequence_number
-      event_metadata:
-        sequence_number: []
-        creation_number: []
-        account_address:
-          - table: multisig_transactions
-            column: multisig_account
-        event_type:
-          - table: multisig_transactions
-            column: event_type
-        event_index: []
-      constant_values: []
     0x1::multisig_account::RemoveOwners:
       event_fields:
         $.multisig_account:
@@ -110,22 +194,6 @@ custom_config:
         sequence_number: []
         creation_number: []
         account_address: []
-        event_type:
-          - table: multisig_owner_activities
-            column: event_type
-        event_index: []
-      constant_values: []
-    0x1::multisig_account::RemoveOwnersEvent:
-      event_fields:
-        $.owners_removed:
-          - table: multisig_owner_activities
-            column: owners_removed
-      event_metadata:
-        sequence_number: []
-        creation_number: []
-        account_address:
-          - table: multisig_owner_activities
-            column: multisig_account
         event_type:
           - table: multisig_owner_activities
             column: event_type
@@ -157,31 +225,6 @@ custom_config:
             column: event_type
         event_index: []
       constant_values: []
-    0x1::multisig_account::TransactionExecutionFailedEvent:
-      event_fields:
-        $.executor:
-          - table: multisig_transactions
-            column: executor
-        $.num_approvals:
-          - table: multisig_transactions
-            column: num_approvals
-        $.sequence_number:
-          - table: multisig_transactions
-            column: sequence_number
-        $.transaction_payload:
-          - table: multisig_transactions
-            column: transaction_payload
-      event_metadata:
-        sequence_number: []
-        creation_number: []
-        account_address:
-          - table: multisig_transactions
-            column: multisig_account
-        event_type:
-          - table: multisig_transactions
-            column: event_type
-        event_index: []
-      constant_values: []
     0x1::multisig_account::TransactionExecutionSucceeded:
       event_fields:
         $.executor:
@@ -208,31 +251,6 @@ custom_config:
             column: event_type
         event_index: []
       constant_values: []
-    0x1::multisig_account::TransactionExecutionSucceededEvent:
-      event_fields:
-        $.executor:
-          - table: multisig_transactions
-            column: executor
-        $.num_approvals:
-          - table: multisig_transactions
-            column: num_approvals
-        $.sequence_number:
-          - table: multisig_transactions
-            column: sequence_number
-        $.transaction_payload:
-          - table: multisig_transactions
-            column: transaction_payload
-      event_metadata:
-        sequence_number: []
-        creation_number: []
-        account_address:
-          - table: multisig_transactions
-            column: multisig_account
-        event_type:
-          - table: multisig_transactions
-            column: event_type
-        event_index: []
-      constant_values: []
     0x1::multisig_account::Vote:
       event_fields:
         $.multisig_account:
@@ -245,22 +263,6 @@ custom_config:
         sequence_number: []
         creation_number: []
         account_address: []
-        event_type:
-          - table: multisig_owner_activities
-            column: event_type
-        event_index: []
-      constant_values: []
-    0x1::multisig_account::VoteEvent:
-      event_fields:
-        $.owner:
-          - table: multisig_owner_activities
-            column: owner_vote
-      event_metadata:
-        sequence_number: []
-        creation_number: []
-        account_address:
-          - table: multisig_owner_activities
-            column: multisig_account
         event_type:
           - table: multisig_owner_activities
             column: event_type

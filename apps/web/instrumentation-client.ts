@@ -84,6 +84,14 @@ Sentry.init({
     ].filter((message): message is string => Boolean(message));
 
     const matchesRule = (rule: ExtensionNoiseRule) => {
+      // A wallet stack can be the cause of a failed Vault mutation.
+      if (
+        rule.id === 'extension-stack-frame' &&
+        event.tags?.['petra.source'] === 'mutation'
+      ) {
+        return false;
+      }
+
       const hasFramePatterns = Boolean(rule.framePatterns?.length);
       const hasMessagePatterns = Boolean(rule.messagePatterns?.length);
       const hasMatchingFrame = hasFramePatterns

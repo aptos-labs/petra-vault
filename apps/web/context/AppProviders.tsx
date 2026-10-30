@@ -1,31 +1,14 @@
 'use client';
 
 import { AptosWalletAdapterProvider } from '@aptos-labs/wallet-adapter-react';
-import { QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import AptosCoreProvider from './AptosCoreProvider';
 import { storageOptionsSerializers } from '@/lib/storage';
 import { hasWindow } from '@/lib/utils';
-import * as Sentry from '@sentry/nextjs';
+import { createQueryClient } from '@/lib/queryClient';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      gcTime: 1000 * 60 * 60 * 24, // 24 hours
-      enabled: hasWindow(),
-      queryKeyHashFn: (queryKey) =>
-        JSON.stringify(queryKey, storageOptionsSerializers.replacer)
-    },
-    mutations: {
-      onError: (error) => {
-        if (error instanceof Error) {
-          Sentry.captureException(error);
-        }
-      }
-    }
-  }
-});
+const queryClient = createQueryClient();
 
 export const ALLOWED_PERSISTED_QUERY_KEYS: string[] = [
   'view-module',

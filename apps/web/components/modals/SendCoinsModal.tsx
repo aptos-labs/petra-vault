@@ -79,7 +79,7 @@ export default function SendCoinsModal({ onClose }: SendCoinsModalProps) {
   }, [resolvedAddress, recipient]);
 
   useEffect(() => {
-    if (coins && !selectedCoin && coins[0]?.metadata?.asset_type) {
+    if (!selectedCoin && coins?.[0]) {
       setSelectedCoin(coins[0]);
     }
   }, [coins, selectedCoin]);
@@ -161,16 +161,17 @@ export default function SendCoinsModal({ onClose }: SendCoinsModalProps) {
     return { transactionPayload, innerPayload };
   }, [selectedCoin, recipientAddress, debouncedAmount, vaultAddress]);
 
-  const { data: simulationData } = useSimulateTransaction({
-    data: innerPayload,
-    sender: AccountAddress.from(vaultAddress),
-    network: { network },
-    options: {
-      estimateGasUnitPrice: true,
-      estimateMaxGasAmount: true,
-      estimatePrioritizedGasUnitPrice: true
-    }
-  });
+  const { data: simulationData, error: simulationError } =
+    useSimulateTransaction({
+      data: innerPayload,
+      sender: AccountAddress.from(vaultAddress),
+      network: { network },
+      options: {
+        estimateGasUnitPrice: true,
+        estimateMaxGasAmount: true,
+        estimatePrioritizedGasUnitPrice: true
+      }
+    });
 
   const { data: isPayloadValid, error: payloadError } = useQuery({
     queryKey: ['is-payload-valid', simulationData?.hash],
@@ -210,6 +211,8 @@ export default function SendCoinsModal({ onClose }: SendCoinsModalProps) {
     enabled: simulationData !== undefined,
     retry: 0
   });
+
+  const draftError = payloadError ?? simulationError;
 
   const { hash, signAndSubmitTransaction, isPending } =
     useSignAndSubmitTransaction({
@@ -430,9 +433,9 @@ export default function SendCoinsModal({ onClose }: SendCoinsModalProps) {
               </Button>
 
               <AnimatePresence mode="popLayout">
-                {payloadError && (
+                {draftError && (
                   <motion.p
-                    key={`payload-error-${payloadError.message}`}
+                    key={`payload-error-${draftError.message}`}
                     initial={{
                       opacity: 0,
                       y: 5,
@@ -450,7 +453,7 @@ export default function SendCoinsModal({ onClose }: SendCoinsModalProps) {
                     }}
                     className="text-destructive-foreground text-center text-sm font-display"
                   >
-                    {payloadError.message}
+                    {draftError.message}
                   </motion.p>
                 )}
                 {recipient !== '' &&

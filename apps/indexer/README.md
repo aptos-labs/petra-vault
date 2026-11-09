@@ -6,6 +6,7 @@ Petra Vault uses the No-Code Indexing (NCI) service from [Geomi](https://geomi.d
 
 - [Setup Instructions](#setup-instructions)
 - [Environment Configuration](#environment-configuration)
+- [Troubleshooting Processor Imports](#troubleshooting-processor-imports)
 - [Initial-owner Discovery on Mainnet](#initial-owner-discovery-on-mainnet)
 
 ## Setup Instructions
@@ -24,7 +25,31 @@ Petra Vault uses the No-Code Indexing (NCI) service from [Geomi](https://geomi.d
 
 > **Note**: You should now have two processors: one for mainnet and one for testnet.
 
-### Step 3: Create API Keys
+Provisioning can take 5–10 minutes. During that time, Geomi may report a missing
+database, missing `processor` / `hasura-api` deployments, and a route JSON error.
+Wait for the overall status to become **Running** before using the API. If it
+stays in **Provisioning**, see [Troubleshooting Processor Imports](#troubleshooting-processor-imports).
+
+### Step 3: Expose Tables in Hasura
+
+For each processor, open its **Console URL** and authenticate with the Hasura admin
+secret shown on the processor page. Under **Data**, select the `processordb`
+database and `public` schema, then **Track** these tables:
+
+- `multisig_transactions`
+- `multisig_owner_activities`
+- `multisig_creation_candidates` (mainnet only)
+
+Hasura only generates GraphQL fields for [tracked tables](https://hasura.io/docs/2.0/api-reference/metadata-api/table-view/).
+If the Explorer shows `no_queries_available` or a query reports a missing field,
+check tracking before changing the query. If **Settings** reports inconsistent
+metadata for a table that now exists, reload the metadata to refresh Hasura's
+schema cache, then track any missing tables and refresh GraphiQL.
+
+Tracking enables admin-console queries. App API keys also need Hasura select
+permissions for their role on the tables they query.
+
+### Step 4: Create API Keys
 
 For **each processor** (mainnet and testnet):
 
@@ -34,7 +59,7 @@ For **each processor** (mainnet and testnet):
    - **Allowed URLs**: `https://<your-petra-vault-domain>`
 3. Click **ADD KEY**
 
-### Step 4: Get Processor Endpoints
+### Step 5: Get Processor Endpoints
 
 For **each processor** (mainnet and testnet):
 
@@ -64,6 +89,33 @@ NEXT_PUBLIC_MULTISIG_INDEXER_TESTNET_ENDPOINT="https://api.testnet.aptoslabs.com
 | `NEXT_PUBLIC_MULTISIG_INDEXER_MAINNET_ENDPOINT` | GraphQL endpoint for mainnet  | `https://api.mainnet.aptoslabs.com/nocode/v1/api/[id]/v1/graphql` |
 | `NEXT_PUBLIC_MULTISIG_INDEXER_TESTNET_API_KEY`  | API key for testnet processor | `AG-...`                                                          |
 | `NEXT_PUBLIC_MULTISIG_INDEXER_TESTNET_ENDPOINT` | GraphQL endpoint for testnet  | `https://api.testnet.aptoslabs.com/nocode/v1/api/[id]/v1/graphql` |
+
+## Troubleshooting Processor Imports
+
+Geomi's visual editor rebuilds column types from event mappings. When legacy
+`*Event` account-address metadata and a module event's `$.multisig_account` field
+share a column, the last mapping wins. If the legacy mapping comes last, the editor
+changes `move_type: address` into `event_metadata: account_address`, even though
+the imported YAML declared the correct type. The processor requires a Move type
+for event-field mappings and cannot start with that configuration.
+
+Both YAML files put legacy `*Event` mappings before module events to avoid this
+editor bug. Keep this order when importing. Before deploying or saving an edit,
+check the generated YAML: the `multisig_account` column in both
+`multisig_transactions` and `multisig_owner_activities` must retain:
+
+```yaml
+column_type:
+  type: move_type
+  column_type: address
+```
+
+If the database and API are running but the processor has no status or reports a
+missing `processor_status` table, inspect the saved configuration and Geomi's
+**Messages** section. Those status messages alone do not identify the cause.
+If the two column types above were changed, import the corrected YAML into the
+processor editor and verify the generated configuration before applying it.
+An editor rebuild can change the types again, so check them on later edits too.
 
 ## Initial-owner Discovery on Mainnet
 
@@ -111,5 +163,5 @@ to create rows before payload enrichment. This stores a row for every matching
 fee event, including unrelated transactions with null owners and failed creation
 calls. Filtering the GraphQL query does not reduce ingestion. Plan ingestion cost
 and backfill before deployment; the YAML's `starting_version: 0` requests history
-from genesis. The promoted config has been checked locally, but has not been
-deployed or verified using the mobile API key.
+from genesis. Before updating app endpoints, verify candidate indexing and table
+permissions using the mobile API key.

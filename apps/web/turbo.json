@@ -3,7 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "generate"],
+      "dependsOn": ["^build"],
       "outputs": [".next/**", "!.next/cache/**", "out/**"],
       "env": ["SENTRY_AUTH_TOKEN", "NEXT_RUNTIME"]
     },

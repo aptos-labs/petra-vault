@@ -14,6 +14,7 @@ import { Network } from '@aptos-labs/ts-sdk';
 import { useAccount } from '@aptos-labs/react';
 import { useSearchParams } from 'next/navigation';
 import { isDevelopment } from '@/lib/development';
+import { getHistoryViewState } from '@/lib/historyViewState';
 
 export default function VaultTransactionsPage() {
   const account = useAccount();
@@ -23,28 +24,25 @@ export default function VaultTransactionsPage() {
   const {
     data: executionEvents,
     isLoading,
+    error,
+    refetch,
+    isRefetching,
+    isError,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    isFetchNextPageError
   } = useMultisigExecutionEvents({
     address: vaultAddress,
-    network: { network },
-    refetchInterval: 10000
+    network: { network }
   });
 
   const groupedTransactions = useMemo(() => {
     if (!executionEvents) return undefined;
 
-    // Sort transactions by timestamp in descending order (newest first)
-    const sortedEvents = executionEvents.pages.flat().sort((a, b) => {
-      const timestampA = a.transaction?.timestamp
-        ? Number(a.transaction.timestamp) / 1000
-        : 0;
-      const timestampB = b.transaction?.timestamp
-        ? Number(b.transaction.timestamp) / 1000
-        : 0;
-      return timestampB - timestampA;
-    });
+    // Pages are ordered by descending version (newest first), and each version
+    // appears in exactly one page since paging uses a version cursor.
+    const sortedEvents = executionEvents.pages.flatMap((page) => page.events);
 
     // Group by month
     const groupedByMonth: Record<string, ExecutionEvent[]> = {};
@@ -68,6 +66,16 @@ export default function VaultTransactionsPage() {
   }, [executionEvents]);
 
   const asOwnerFlag = searchParams.get('as_owner') === '1';
+  const hasCachedEvents = (executionEvents?.pages ?? []).some(
+    (page) => page.events.length > 0
+  );
+  const viewState = getHistoryViewState({
+    hasData: Boolean(executionEvents),
+    eventCount: executionEvents?.pages.flatMap((p) => p.events).length ?? 0,
+    hasNextPage,
+    isError,
+    isFetchNextPageError
+  });
 
   return (
     <div className="h-full flex flex-col pb-12">
@@ -114,8 +122,17 @@ export default function VaultTransactionsPage() {
           <div className="text-center py-16 font-display text-muted-foreground bg-secondary rounded-sm">
             Historical transactions are not available on Devnet.
           </div>
-        ) : groupedTransactions &&
-          Object.entries(groupedTransactions).length === 0 ? (
+        ) : viewState === 'error' ? (
+          <div className="flex flex-col items-center gap-4 text-center py-16 font-display text-muted-foreground bg-secondary rounded-sm">
+            <span>
+              Failed to load transaction history:{' '}
+              {error instanceof Error ? error.message : 'Unknown error'}
+            </span>
+            <Button variant="secondary" onClick={() => refetch()}>
+              Retry
+            </Button>
+          </div>
+        ) : viewState === 'empty' ? (
           <motion.div
             key="no-transactions"
             className="text-center py-16 font-display text-muted-foreground bg-secondary rounded-sm"
@@ -132,6 +149,27 @@ export default function VaultTransactionsPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
+            {viewState === 'stale' && (
+              <div
+                role="alert"
+                className="flex flex-wrap items-center justify-between gap-4 mb-6 px-4 py-3 rounded-sm bg-secondary font-display text-destructive-foreground"
+              >
+                <span>
+                  Failed to refresh transaction history
+                  {executionEvents && !hasCachedEvents
+                    ? ', so it is unknown whether there are any transactions'
+                    : '; showing previously loaded transactions'}
+                  : {error instanceof Error ? error.message : 'Unknown error'}
+                </span>
+                <Button
+                  variant="secondary"
+                  onClick={() => refetch()}
+                  isLoading={isRefetching}
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
             {groupedTransactions &&
               Object.entries(groupedTransactions).map(([monthYear, events]) => (
                 <div key={monthYear} className="mb-8">
@@ -142,7 +180,7 @@ export default function VaultTransactionsPage() {
                     {events.map((event, index) => {
                       return (
                         <motion.div
-                          key={event.version}
+                          key={`${event.version}:${event.sequenceNumber}`}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="w-full"
@@ -163,25 +201,33 @@ export default function VaultTransactionsPage() {
                   </div>
                 </div>
               ))}
-            <motion.div
-              className="flex justify-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  if (hasNextPage) fetchNextPage();
-                }}
-                disabled={!hasNextPage}
-                isLoading={isFetchingNextPage}
+            {isFetchNextPageError && (
+              <div className="text-center pb-4 font-display text-destructive-foreground">
+                Failed to load more transactions:{' '}
+                {error instanceof Error ? error.message : 'Unknown error'}
+              </div>
+            )}
+            {(hasNextPage || hasCachedEvents || viewState !== 'stale') && (
+              <motion.div
+                className="flex justify-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
               >
-                {hasNextPage
-                  ? 'Load more transactions'
-                  : 'No more transactions to load'}
-              </Button>
-            </motion.div>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    if (hasNextPage) fetchNextPage();
+                  }}
+                  disabled={!hasNextPage}
+                  isLoading={isFetchingNextPage}
+                >
+                  {hasNextPage
+                    ? 'Load more transactions'
+                    : 'No more transactions to load'}
+                </Button>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

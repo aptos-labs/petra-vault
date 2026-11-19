@@ -1,13 +1,8 @@
 import { fetchCachedTransaction } from '@/actions/fetchCachedTransaction';
-import { getMultisigIndexerClient } from '@/operations';
+import { ExecutionEvent, extractExecutionEvents } from '@/lib/executionEvents';
 import { NetworkInfo, Order_By } from '@aptos-labs/js-pro';
-import { useClients } from '@aptos-labs/react';
-import {
-  AccountAddress,
-  Network,
-  TransactionResponseType,
-  UserTransactionResponse
-} from '@aptos-labs/ts-sdk';
+import { useAptosCore } from '@aptos-labs/react';
+import { Network, TransactionResponseType } from '@aptos-labs/ts-sdk';
 import {
   DefaultError,
   InfiniteData,
@@ -15,29 +10,32 @@ import {
   useInfiniteQuery,
   UseInfiniteQueryOptions
 } from '@tanstack/react-query';
-import { LONG_FRAMEWORK_ADDRESS } from '@/lib/constants';
 
-const MULTISIG_EXECUTION_EVENTS_PAGE_SIZE = 15;
+export type { ExecutionEvent };
 
-export interface ExecutionEvent {
-  type: 'success' | 'failed' | 'rejected';
-  version: string;
-  payload?: string;
-  approvals?: number;
-  rejections?: number;
-  executor: AccountAddress;
-  sequenceNumber: number;
-  transaction: UserTransactionResponse;
+/** Number of account transactions scanned per page. */
+const ACCOUNT_TRANSACTIONS_PAGE_SIZE = 15;
+
+export interface MultisigExecutionEventsPage {
+  events: ExecutionEvent[];
+  /**
+   * Exclusive upper transaction version of the next page, or `undefined` when the
+   * account's transaction history has been fully scanned. A page may contain fewer
+   * events than the page size (even none) while still having a next page, because
+   * unrelated account transactions (votes, proposals, ...) are skipped.
+   * Events are ordered by descending version.
+   */
+  nextCursor?: string;
 }
 
 interface UseMultisigExecutionEventsParameters
   extends Omit<
     UseInfiniteQueryOptions<
-      ExecutionEvent[],
+      MultisigExecutionEventsPage,
       DefaultError,
-      InfiniteData<ExecutionEvent[]>,
+      InfiniteData<MultisigExecutionEventsPage, string | null>,
       QueryKey,
-      number
+      string | null
     >,
     | 'queryFn'
     | 'queryKey'
@@ -47,117 +45,70 @@ interface UseMultisigExecutionEventsParameters
   > {
   address: string;
   network?: NetworkInfo;
-  page?: number;
 }
 
+/**
+ * Execution history of a multisig account, built from standard Aptos APIs:
+ * the indexer's account transactions list the versions that touched the account, and the
+ * fullnode transaction (with its events) tells whether one of them executed a multisig
+ * transaction. Request failures are thrown so they surface through the query's `error`.
+ */
 export default function useMultisigExecutionEvents({
   address,
   network,
   ...options
 }: UseMultisigExecutionEventsParameters) {
-  const { aptos } = useClients({ network });
+  const core = useAptosCore();
+
+  const activeNetwork = network ?? core.network;
 
   const enabled = Boolean(
-    network?.network !== Network.DEVNET && (options.enabled ?? true)
+    activeNetwork.network !== Network.DEVNET && (options.enabled ?? true)
   );
 
   return useInfiniteQuery({
     ...options,
     enabled,
-    queryKey: ['multisig-execution-events', address, network],
-    initialPageParam: 0,
-    queryFn: async ({ pageParam = 0 }) => {
-      const resolvedNetwork = network?.network ?? aptos.config.network;
+    // v2: page shape changed from ExecutionEvent[] to { events, nextCursor }.
+    queryKey: ['multisig-execution-history-v2', address, activeNetwork],
+    staleTime: 30_000,
+    initialPageParam: null as string | null,
+    queryFn: async ({ pageParam }): Promise<MultisigExecutionEventsPage> => {
+      const { transactions } = await core.client.fetchAccountTransactions({
+        network: activeNetwork,
+        address,
+        orderBy: [{ transaction_version: Order_By.Desc }],
+        where:
+          pageParam === null
+            ? undefined
+            : { transaction_version: { _lt: pageParam } },
+        limit: ACCOUNT_TRANSACTIONS_PAGE_SIZE,
+        offset: 0
+      });
 
-      const multisigIndexerClient = getMultisigIndexerClient(resolvedNetwork);
-
-      if (!multisigIndexerClient) {
-        console.error(
-          `Multisig indexer client is unavailable for this network: ${network}.`
-        );
-        return [];
-      }
-
-      const { multisig_transactions: multisigTransactions } =
-        await multisigIndexerClient.getMultisigTransactions({
-          multisigAccount: address,
-          where: {},
-          orderBy: [{ version: Order_By.Desc }],
-          limit: MULTISIG_EXECUTION_EVENTS_PAGE_SIZE,
-          offset: pageParam
-        });
-
-      const userTransactions = await Promise.all(
-        multisigTransactions.map((e) =>
-          fetchCachedTransaction(Number(e.version), resolvedNetwork)
+      const fetched = await Promise.all(
+        transactions.map((t) =>
+          fetchCachedTransaction(
+            Number(t.transactionVersion),
+            activeNetwork.network
+          )
         )
       );
 
-      return multisigTransactions.reduce((acc, multisigTransaction) => {
-        const userTransaction = userTransactions.find(
-          (t) =>
-            t.type === TransactionResponseType.User &&
-            t.version === multisigTransaction.version
-        );
+      const events = fetched.flatMap((transaction) =>
+        transaction.type === TransactionResponseType.User
+          ? extractExecutionEvents(transaction, address)
+          : []
+      );
 
-        if (
-          !userTransaction ||
-          userTransaction.type !== TransactionResponseType.User
-        ) {
-          return acc;
-        }
-
-        // Normalize the sender address to fix zero prefixed addresses
-        userTransaction.sender = AccountAddress.from(
-          userTransaction.sender
-        ).toString();
-
-        let status: 'success' | 'failed' | 'rejected';
-        switch (multisigTransaction.event_type) {
-          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::TransactionExecutionSucceeded`:
-          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::TransactionExecutionSucceededEvent`:
-            status = 'success';
-            break;
-          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::TransactionExecutionFailed`:
-          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::TransactionExecutionFailedEvent`:
-            status = 'failed';
-            break;
-          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::ExecuteRejectedTransaction`:
-          case `${LONG_FRAMEWORK_ADDRESS}::multisig_account::ExecuteRejectedTransactionEvent`:
-            status = 'rejected';
-            break;
-          default:
-            console.error(
-              `Unknown event type: ${multisigTransaction.event_type}`
-            );
-            return acc;
-        }
-
-        acc.push({
-          type: status,
-          version: multisigTransaction.version,
-          payload: multisigTransaction.transaction_payload as
-            | string
-            | undefined,
-          approvals: multisigTransaction.num_approvals
-            ? Number(multisigTransaction.num_approvals)
-            : undefined,
-          rejections: multisigTransaction.num_rejections
-            ? Number(multisigTransaction.num_rejections)
-            : undefined,
-          executor: AccountAddress.from(multisigTransaction.executor!),
-          sequenceNumber: Number(multisigTransaction.sequence_number),
-          transaction: userTransaction
-        });
-
-        return acc;
-      }, [] as ExecutionEvent[]);
+      return {
+        events,
+        nextCursor:
+          transactions.length === ACCOUNT_TRANSACTIONS_PAGE_SIZE
+            ? transactions.at(-1)?.transactionVersion
+            : undefined
+      };
     },
-    getPreviousPageParam: (_, __, ___, allPageParams) => allPageParams.at(-1),
-    getNextPageParam: (lastPage, _, lastPageParam) =>
-      lastPage.length === 0 ||
-      lastPage.length !== MULTISIG_EXECUTION_EVENTS_PAGE_SIZE
-        ? undefined
-        : lastPageParam + MULTISIG_EXECUTION_EVENTS_PAGE_SIZE
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined
   });
 }

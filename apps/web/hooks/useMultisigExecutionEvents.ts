@@ -1,8 +1,5 @@
 import { fetchCachedTransaction } from '@/actions/fetchCachedTransaction';
-import {
-  ExecutionEvent,
-  extractExecutionEvents
-} from '@/lib/executionEvents';
+import { ExecutionEvent, extractExecutionEvents } from '@/lib/executionEvents';
 import { NetworkInfo, Order_By } from '@aptos-labs/js-pro';
 import { useAptosCore } from '@aptos-labs/react';
 import { Network, TransactionResponseType } from '@aptos-labs/ts-sdk';

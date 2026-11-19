@@ -386,11 +386,15 @@ describe('discoverMultisigAccounts', () => {
     await discoverMultisigAccounts({ aptos, owner: shortOwner });
 
     expect(indexer).toHaveBeenCalledTimes(1);
-    const [firstCall] = indexer.mock.calls;
-    const { query } = firstCall?.[0] as {
-      query: { variables: { address: string } };
-    };
-    expect(query.variables.address).toBe(shortOwner.toStringLong());
+    expect(indexer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        query: expect.objectContaining({
+          variables: expect.objectContaining({
+            address: shortOwner.toStringLong()
+          })
+        })
+      })
+    );
   });
 
   it('flags truncation when the owner has more activity than the scan window', async () => {

@@ -325,7 +325,8 @@ export async function discoverMultisigAccounts({
   const transactionResults = await mapSettled(
     page.versions,
     DISCOVERY_CONCURRENCY,
-    (version) => aptos.getTransactionByVersion({ ledgerVersion: BigInt(version) }),
+    (version) =>
+      aptos.getTransactionByVersion({ ledgerVersion: BigInt(version) }),
     signal
   );
 

@@ -207,7 +207,7 @@ export default function VaultTransactionsPage() {
                 {error instanceof Error ? error.message : 'Unknown error'}
               </div>
             )}
-            {(hasCachedEvents || viewState !== 'stale') && (
+            {(hasNextPage || hasCachedEvents || viewState !== 'stale') && (
               <motion.div
                 className="flex justify-center"
                 initial={{ opacity: 0 }}

@@ -23,28 +23,23 @@ export default function VaultTransactionsPage() {
   const {
     data: executionEvents,
     isLoading,
+    error,
+    refetch,
     fetchNextPage,
     hasNextPage,
-    isFetchingNextPage
+    isFetchingNextPage,
+    isFetchNextPageError
   } = useMultisigExecutionEvents({
     address: vaultAddress,
-    network: { network },
-    refetchInterval: 10000
+    network: { network }
   });
 
   const groupedTransactions = useMemo(() => {
     if (!executionEvents) return undefined;
 
-    // Sort transactions by timestamp in descending order (newest first)
-    const sortedEvents = executionEvents.pages.flat().sort((a, b) => {
-      const timestampA = a.transaction?.timestamp
-        ? Number(a.transaction.timestamp) / 1000
-        : 0;
-      const timestampB = b.transaction?.timestamp
-        ? Number(b.transaction.timestamp) / 1000
-        : 0;
-      return timestampB - timestampA;
-    });
+    // Pages are ordered by descending version (newest first), and each version
+    // appears in exactly one page since paging uses a version cursor.
+    const sortedEvents = executionEvents.pages.flatMap((page) => page.events);
 
     // Group by month
     const groupedByMonth: Record<string, ExecutionEvent[]> = {};
@@ -114,8 +109,19 @@ export default function VaultTransactionsPage() {
           <div className="text-center py-16 font-display text-muted-foreground bg-secondary rounded-sm">
             Historical transactions are not available on Devnet.
           </div>
+        ) : error && !executionEvents ? (
+          <div className="flex flex-col items-center gap-4 text-center py-16 font-display text-muted-foreground bg-secondary rounded-sm">
+            <span>
+              Failed to load transaction history:{' '}
+              {error instanceof Error ? error.message : 'Unknown error'}
+            </span>
+            <Button variant="secondary" onClick={() => refetch()}>
+              Retry
+            </Button>
+          </div>
         ) : groupedTransactions &&
-          Object.entries(groupedTransactions).length === 0 ? (
+          Object.entries(groupedTransactions).length === 0 &&
+          !hasNextPage ? (
           <motion.div
             key="no-transactions"
             className="text-center py-16 font-display text-muted-foreground bg-secondary rounded-sm"
@@ -142,7 +148,7 @@ export default function VaultTransactionsPage() {
                     {events.map((event, index) => {
                       return (
                         <motion.div
-                          key={event.version}
+                          key={`${event.version}:${event.sequenceNumber}`}
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           className="w-full"
@@ -163,6 +169,12 @@ export default function VaultTransactionsPage() {
                   </div>
                 </div>
               ))}
+            {isFetchNextPageError && (
+              <div className="text-center pb-4 font-display text-destructive-foreground">
+                Failed to load more transactions:{' '}
+                {error instanceof Error ? error.message : 'Unknown error'}
+              </div>
+            )}
             <motion.div
               className="flex justify-center"
               initial={{ opacity: 0 }}

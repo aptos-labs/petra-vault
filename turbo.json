@@ -4,12 +4,8 @@
   "globalEnv": ["NODE_ENV", "CI"],
   "globalPassThroughEnv": ["SENTRY_AUTH_TOKEN", "NEXT_RUNTIME"],
   "tasks": {
-    "generate": {
-      "dependsOn": ["^generate"],
-      "outputs": ["generated/**"]
-    },
     "build": {
-      "dependsOn": ["^build", "generate"],
+      "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**"]
     },

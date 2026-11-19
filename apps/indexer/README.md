@@ -1,6 +1,8 @@
 # Petra Vault Indexer
 
-Petra Vault uses the No-Code Indexing (NCI) service from [Geomi](https://geomi.dev/) to index multisig transactions and enable ownership discovery. This service provides real-time indexing of on-chain data for both mainnet and testnet environments.
+> **Legacy / optional for web.** The Petra Vault web app (`apps/web`) no longer depends on this NCI processor: it uses standard Aptos APIs and needs no `NEXT_PUBLIC_MULTISIG_INDEXER_*` variables, GraphQL schema, or code generation. This directory is kept for other clients that still query the processor (for example mobile) and for initial-owner discovery, which standard Aptos APIs cannot provide.
+
+Petra Vault's legacy processor uses the No-Code Indexing (NCI) service from [Geomi](https://geomi.dev/) to index multisig transactions and enable ownership discovery for both mainnet and testnet.
 
 ## Table of Contents
 
@@ -69,7 +71,7 @@ For **each processor** (mainnet and testnet):
 
 ## Environment Configuration
 
-Navigate to the `apps/web` directory and configure these environment variables in your `.env.local` file:
+Web does not read these variables. Configure them only in the client that consumes the processor (for example mobile):
 
 ```bash
 # Mainnet Configuration

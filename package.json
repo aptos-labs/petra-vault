@@ -3,7 +3,6 @@
   "private": true,
   "license": "Apache-2.0",
   "scripts": {
-    "generate": "turbo run generate",
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
@@ -13,8 +12,7 @@
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "format:fix": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types",
-    "prepare": "pnpm generate"
+    "check-types": "turbo run check-types"
   },
   "devDependencies": {
     "@types/node": "^22.15.33",

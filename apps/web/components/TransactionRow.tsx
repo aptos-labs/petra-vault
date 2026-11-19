@@ -106,6 +106,7 @@ export default function TransactionRow({
           {getEntryFunctionDisplayName(transactionPayload.function)}
         </p>
         <p className="text-xs text-muted-foreground w-full truncate">
+          {executionEvent && `Proposal #${executionEvent.sequenceNumber} · `}
           {transaction.timestamp && (
             <span className="text-xs">
               {new Date(Number(transaction.timestamp) / 1000).toLocaleString()}

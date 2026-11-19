@@ -96,9 +96,11 @@ Runtime versions are defined in the [`.tool-versions`](../.tool-versions) file. 
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
 
-### No-Code Indexer
+### Indexing
 
-Petra Vault uses the No-Code Indexing (NCI) service from [Geomi](https://geomi.dev/) in order to index multisig transactions and ownership discovery. In order to run the indexer, please follow the instructions in the [indexer README](../indexer/README.md).
+The web app does not require a No-Code Indexing (NCI) processor. Multisig discovery and history use standard Aptos APIs (the fullnode REST API and the public Aptos indexer), so no NCI endpoint, API key, or GraphQL code generation step is needed to build or run it. If an Aptos API request fails, the app surfaces the error instead of showing an empty result.
+
+Discovery checks recent multisig calls sent by the connected wallet and verifies current ownership on-chain. It can miss vaults, including those where the wallet was added but never proposed or voted. Import missing vaults by address or from a backup. The [legacy indexer](../apps/indexer/README.md) remains available for other clients; the web app does not use it.
 
 ### Environment Variables
 

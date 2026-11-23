@@ -53,10 +53,10 @@ Sentry.init({
   dataCollection: {
     userInfo: false,
     cookies: false,
-    httpHeaders: false,
-    httpBodies: [],
-    urlQueryParams: false,
-    stackFrameVariables: false
+    httpHeaders: {
+      deny: ['x-forwarded-', '-user']
+    },
+    httpBodies: []
   },
 
   // Add optional integrations for additional features

@@ -11,10 +11,10 @@ Sentry.init({
   dataCollection: {
     userInfo: false,
     cookies: false,
-    httpHeaders: false,
-    httpBodies: [],
-    urlQueryParams: false,
-    stackFrameVariables: false
+    httpHeaders: {
+      deny: ['x-forwarded-', '-user']
+    },
+    httpBodies: []
   },
 
   // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.

@@ -26,16 +26,15 @@ import { useClients } from '@aptos-labs/react';
 import { useMutation } from '@tanstack/react-query';
 
 const formSchema = z.object({
-  address: z.union([
-    z
-      .string()
-      .min(1, 'Address is required')
-      .refine((val) => isAddress(val), { message: 'Invalid Aptos address' }),
-    z.string().endsWith('.apt')
-  ]),
+  address: z
+    .string()
+    .min(1, { error: 'Address is required', abort: true })
+    .refine((val) => isAddress(val) || val.endsWith('.apt'), {
+      message: 'Invalid Aptos address'
+    }),
   name: z.string().min(1, 'Name is required'),
   signaturesRequired: z.coerce
-    .number()
+    .number<number>()
     .min(1, 'Signatures required must be greater than 0')
 });
 
@@ -92,7 +91,7 @@ export default function AddOwnerProposalForm({
 
       if (!result.success)
         throw new Error(
-          result.error.errors.at(0)?.message ??
+          result.error.issues.at(0)?.message ??
             'There was an error that occurred.'
         );
 

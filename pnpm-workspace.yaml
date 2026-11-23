@@ -5,8 +5,8 @@ packages:
 catalog:
   prettier: ^3.6.1
   typescript: ^5.8.3
-  eslint-plugin-turbo: 2.9.3
-  '@sentry/nextjs': ^10.47.0
+  eslint-plugin-turbo: 2.11.13
+  '@sentry/nextjs': ~11.16.0
   oxlint: ^1.58.0
 
 catalogMode: prefer

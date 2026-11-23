@@ -21,7 +21,7 @@ import {
 
 const formSchema = z.object({
   signaturesRequired: z.coerce
-    .number()
+    .number<number>()
     .min(1, 'Signatures required must be greater than 0')
 });
 

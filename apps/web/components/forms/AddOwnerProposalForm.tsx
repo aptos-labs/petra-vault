@@ -35,7 +35,7 @@ const formSchema = z.object({
   ]),
   name: z.string().min(1, 'Name is required'),
   signaturesRequired: z.coerce
-    .number()
+    .number<number>()
     .min(1, 'Signatures required must be greater than 0')
 });
 
@@ -92,7 +92,7 @@ export default function AddOwnerProposalForm({
 
       if (!result.success)
         throw new Error(
-          result.error.errors.at(0)?.message ??
+          result.error.issues.at(0)?.message ??
             'There was an error that occurred.'
         );
 

@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 
 export const fetchCoinsResponseSchema = z.record(
-  z.record(z.number().nullable())
+  z.string(),
+  z.record(z.string(), z.number().nullable())
 );
 
 export type FetchCoinsResponse = z.infer<typeof fetchCoinsResponseSchema>;

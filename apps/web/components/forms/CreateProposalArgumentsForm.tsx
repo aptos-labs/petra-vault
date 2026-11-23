@@ -40,6 +40,11 @@ interface CreateProposalArgumentsFormProps {
   disabled?: boolean;
 }
 
+type FormValues = {
+  functionArguments: EntryFunctionFormFunctionArguments;
+  typeArguments: EntryFunctionFormTypeArguments;
+};
+
 export default function CreateProposalArgumentsForm({
   abi,
   onFunctionArgumentsChange,
@@ -75,11 +80,11 @@ export default function CreateProposalArgumentsForm({
                 ]
               )
             : z.tuple([])
-      }),
+      }) as unknown as z.ZodType<FormValues, FormValues>,
     [abi]
   );
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       functionArguments:

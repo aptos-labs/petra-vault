@@ -49,7 +49,7 @@ const formSchema = z.object({
       message: 'At least one signer is required.'
     }),
   signaturesRequired: z.coerce
-    .number()
+    .number<number>()
     .min(1, { message: 'The signatures required must be at least 1.' })
     .max(32, { message: 'The signatures required must be less than 32' })
     .refine((val) => val > 0, {

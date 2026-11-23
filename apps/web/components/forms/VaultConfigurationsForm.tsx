@@ -35,13 +35,14 @@ const formSchema = z.object({
         address: z.union([
           z
             .string()
-            .min(1, 'Address is required')
-            .refine((val) => isAddress(val), {
+            .min(1, { error: 'Address is required', abort: true })
+            .refine((val) => isAddress(val) || val.endsWith('.apt'), {
               message: 'Invalid Aptos address'
             })
-            .transform((val) => AccountAddress.fromString(val)),
-          z.instanceof(AccountAddress),
-          z.string().endsWith('.apt')
+            .transform((val) =>
+              val.endsWith('.apt') ? val : AccountAddress.fromString(val)
+            ),
+          z.instanceof(AccountAddress)
         ])
       })
     )

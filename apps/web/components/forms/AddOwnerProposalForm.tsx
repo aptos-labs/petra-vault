@@ -26,13 +26,12 @@ import { useClients } from '@aptos-labs/react';
 import { useMutation } from '@tanstack/react-query';
 
 const formSchema = z.object({
-  address: z.union([
-    z
-      .string()
-      .min(1, 'Address is required')
-      .refine((val) => isAddress(val), { message: 'Invalid Aptos address' }),
-    z.string().endsWith('.apt')
-  ]),
+  address: z
+    .string()
+    .min(1, { error: 'Address is required', abort: true })
+    .refine((val) => isAddress(val) || val.endsWith('.apt'), {
+      message: 'Invalid Aptos address'
+    }),
   name: z.string().min(1, 'Name is required'),
   signaturesRequired: z.coerce
     .number<number>()
